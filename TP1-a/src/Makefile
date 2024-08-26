@@ -42,16 +42,12 @@ $(RUN): run_%: %
 # Las flags de compilación con las que deben llamar a gcc están dadas en la variable CFLAGS
 # Se dejan las dependencias de este primer target como ejemplo; completar para los demás
 tests_lista_enlazada: tests_lista_enlazada.o lista_enlazada.o
-#   COMPLETAR
 
-tests_classify_chars: #COMPLETAR 
-#   COMPLETAR
+tests_classify_chars: tests_classify_chars.o classify_chars.o
 
-tests_vector: #COMPLETAR
-# 	COMPLETAR
+tests_vector: tests_vector.o vector.o
 
-tests_contar_espacios: #COMPLETAR
-# 	COMPLETAR
+tests_contar_espacios: tests_contar_espacios.o contar_espacios.o
 
 # Para pensar: ¿por qué funciona esto (sin cuerpo)?
 # Pista: https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html
