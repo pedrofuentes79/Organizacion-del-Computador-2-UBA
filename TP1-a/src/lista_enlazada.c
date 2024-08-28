@@ -43,7 +43,7 @@ nodo_t* iesimo(lista_t* lista, uint32_t i) {
         current = current->next;
         counter++;
     }
-    return lista->head;
+    return current;
 }
 
 uint64_t cantidad_total_de_elementos(lista_t* lista) {
