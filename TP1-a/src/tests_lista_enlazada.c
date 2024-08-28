@@ -98,6 +98,7 @@ void test_agregar_al_final(void) {
     }
 
     destruir_lista(mi_lista);
+    free(array);
 }
 
 
@@ -144,7 +145,7 @@ void test_cantidad_total_de_elementos(void) {
     }
 
     destruir_lista(mi_lista);
-
+    free(array);
 }
 
 void test_lista_contiene_elemento(void) {
@@ -205,6 +206,7 @@ void test_lista_contiene_elemento(void) {
     }
 
     destruir_lista(mi_lista);
+    free(array);
 }
 
 void testear_todas_las_funciones() {

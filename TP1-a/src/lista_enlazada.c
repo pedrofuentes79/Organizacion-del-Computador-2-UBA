@@ -13,7 +13,7 @@ lista_t* nueva_lista(void) {
 uint32_t longitud(lista_t* lista) {
     uint32_t counter = 0;
     nodo_t* current = lista->head;
-    while(lista->head != NULL) {
+    while(current != NULL) {
         counter++;
         current = current->next;
     }
@@ -43,7 +43,7 @@ nodo_t* iesimo(lista_t* lista, uint32_t i) {
         current = current->next;
         counter++;
     }
-    return lista->head;
+    return current;
 }
 
 uint64_t cantidad_total_de_elementos(lista_t* lista) {
@@ -58,8 +58,8 @@ uint64_t cantidad_total_de_elementos(lista_t* lista) {
 
 void imprimir_lista(lista_t* lista) {
     nodo_t* current = lista->head;
-    while(lista->head != NULL) {
-        printf("| %lu | -> ", lista->head->longitud);
+    while(current != NULL) {
+        printf("| %lu | -> ", current->longitud);
         current = current->next;
     }
     printf("null\n");
