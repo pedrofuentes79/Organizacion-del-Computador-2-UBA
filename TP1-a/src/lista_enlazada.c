@@ -49,8 +49,8 @@ nodo_t* iesimo(lista_t* lista, uint32_t i) {
 uint64_t cantidad_total_de_elementos(lista_t* lista) {
     uint64_t counter = 0;
     nodo_t* current = lista->head;
-    while(lista->head != NULL) {
-        counter += lista->head->longitud;
+    while(current != NULL) {
+        counter += current->longitud;
         current = current->next;
     }
     return counter;
@@ -59,7 +59,7 @@ uint64_t cantidad_total_de_elementos(lista_t* lista) {
 void imprimir_lista(lista_t* lista) {
     nodo_t* current = lista->head;
     while(lista->head != NULL) {
-        printf("| %I64u | -> ", lista->head->longitud);
+        printf("| %lu | -> ", lista->head->longitud);
         current = current->next;
     }
     printf("null\n");
@@ -78,12 +78,14 @@ int array_contiene_elemento(uint32_t* array, uint64_t size_of_array, uint32_t el
 }
 
 int lista_contiene_elemento(lista_t* lista, uint32_t elemento_a_buscar){
-    while(lista -> head != NULL){
-        if (array_contiene_elemento(lista->head->arreglo,lista->head->longitud, elemento_a_buscar))
+    nodo_t* current = lista->head;
+
+    while(current != NULL){
+        if (array_contiene_elemento(current->arreglo,current->longitud, elemento_a_buscar))
         {
             return 1;
         }
-        lista-> head = lista->head->next;
+        current = current->next;
         }
     return 0;
 }
