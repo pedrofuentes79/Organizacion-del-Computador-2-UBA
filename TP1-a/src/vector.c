@@ -31,7 +31,6 @@ void push_back(vector_t* vector, uint32_t elemento) {
         // si hay espacio contiguo en la memoria para agregarle al final, lo hace;
         // si no, lo mueve a otro lado donde haya espacio suficiente y copia los contenidos.
         vector->array = realloc(vector->array, vector->capacity * sizeof(uint32_t));
-
     }
     
     // agrego el elemento al final
@@ -62,9 +61,20 @@ uint32_t iesimo(vector_t* vector, size_t index) {
 
 void copiar_iesimo(vector_t* vector, size_t index, uint32_t* out)
 {
+    if (index >= vector->size){
+        *out = 0;
+        return;
+    }
+    *out = vector->array[index];
 }
 
 
 // Dado un array de vectores, devuelve un puntero a aquel con mayor longitud.
 vector_t* vector_mas_grande(vector_t** array_de_vectores, size_t longitud_del_array) {
+    vector_t* maximo = NULL;
+    for(size_t i = 0; i < longitud_del_array; i++){
+        if (maximo == NULL || array_de_vectores[i]->size > maximo->size)
+            maximo = array_de_vectores[i];
+    }
+    return maximo;
 }
