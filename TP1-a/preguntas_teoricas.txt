@@ -4,13 +4,17 @@ Ejercicio Lista Enlazada:
 ¿en que segmentos de memoria se alojan las siguientes variables?:
 
 a: mi_lista se va a alojar en el segmento HEAP, pues corresponde a una variable dinamica administrada por malloc.
+De todos modos, su puntero se va a alojar en el stack, pues es una variable local dentro de una funcion.
 
-b: mi_otra_lista es simplemente la declaracion de la variabl, entonces se va a alojar en el stack, pues aun no se le aloco memoria.
+b: mi_otra_lista es simplemente la declaracion de la variable, entonces se va a alojar en el stack, pues aun no se le aloco memoria.
 
-c: mi_otra_lista.head
+c: mi_otra_lista.head tambien esta en el stack, pues es un campo de mi_otra_lista, que tambien esta en el stack.
 
+d: mi_lista->head tambien esta en el HEAP, pues es un campo de un struct que esta en el HEAP.
+
+Si a mi_otra_lista la creamos fuera de cualquier funcion, va a ir al segmento BSS, donde van las variables globales no inicializadas.
 
 Ejercicio Classify Chars
 1. En C, no hace falta declarar el tamaño de un string ya que se representan como arreglos de chars, y el char '\0' es el que determina cuando finaliza el string
-2. Para empezar, podemos devolver un struct. Al no poder devolver mas de un valor, podemos definir un struct que nos permita guardar tanto las vocales como las consonantes. 
+2. Para empezar, podemos devolver un struct (en la funcion 'auxiliar' en la otra devolvemos un arreglo de structs). Al no poder devolver mas de un valor, podemos definir un struct que nos permita guardar tanto las vocales como las consonantes. 
 Otra manera puede ser que la funcion reciba punteros a arreglos, y que modifique esos arreglos, siendo esos los parametros de salida.
