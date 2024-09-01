@@ -53,19 +53,14 @@ int son_iguales(vector_t* v1, vector_t* v2) {
 }
 
 uint32_t iesimo(vector_t* vector, size_t index) {
-    if (index > vector->size){
+    if (index >= vector->size){
         return 0;
     }
     return vector->array[index];
 }
 
-void copiar_iesimo(vector_t* vector, size_t index, uint32_t* out)
-{
-    if (index >= vector->size){
-        *out = 0;
-        return;
-    }
-    *out = vector->array[index];
+void copiar_iesimo(vector_t* vector, size_t index, uint32_t* out){
+    *out = iesimo(vector, index);
 }
 
 
