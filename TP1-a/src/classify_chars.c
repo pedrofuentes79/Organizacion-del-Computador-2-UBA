@@ -4,24 +4,19 @@
 #include <string.h>
 #include <ctype.h>
 
-
 void classify_chars_in_string(char* string, char** vowels_and_cons) {
     int i = 0;
     while(string[i] != '\0'){
         char value = toupper(string[i]);
+        int index = 1; // consontantes + otros caracteres
+        size_t len;
         if(value == 'A' || value == 'E'|| value == 'I' || value == 'O' || value == 'U'){
-            size_t len = strlen(vowels_and_cons[0]);
-            // reallocamos el array para agregar un nuevo caracter
-            vowels_and_cons[0] = realloc(vowels_and_cons[0],(len+2)*sizeof(char));
-            vowels_and_cons[0][len] = string[i];
-            vowels_and_cons[0][len+1] = '\0';
+            index = 0; // vocales
         }
-        else {
-            size_t len = strlen(vowels_and_cons[1]);
-            vowels_and_cons[1] = realloc(vowels_and_cons[1],(len+2)*sizeof(char));
-            vowels_and_cons[1][len] = string[i];
-            vowels_and_cons[1][len+1] = '\0';
-        }
+        len = strlen(vowels_and_cons[index]);
+        vowels_and_cons[index] = realloc(vowels_and_cons[index],(len+2)*sizeof(char));
+        vowels_and_cons[index][len] = string[i];
+        vowels_and_cons[index][len+1] = '\0';
         i++;
     }
 }
