@@ -9,14 +9,13 @@ void classify_chars_in_string(char* string, char** vowels_and_cons) {
     while(string[i] != '\0'){
         char value = toupper(string[i]);
         int index = 1; // consontantes + otros caracteres
-        size_t len;
         if(value == 'A' || value == 'E'|| value == 'I' || value == 'O' || value == 'U'){
             index = 0; // vocales
         }
-        len = strlen(vowels_and_cons[index]);
-        vowels_and_cons[index] = realloc(vowels_and_cons[index],(len+2)*sizeof(char));
-        vowels_and_cons[index][len] = string[i];
-        vowels_and_cons[index][len+1] = '\0';
+        size_t len = strlen(vowels_and_cons[index]);
+        //vowels_and_cons[index] = realloc(vowels_and_cons[index],(len+2)*sizeof(char)); // actualizamos tamaño char*
+        vowels_and_cons[index][len] = string[i]; // agregamos elemento
+        vowels_and_cons[index][len+1] = '\0'; // fin de char*
         i++;
     }
 }

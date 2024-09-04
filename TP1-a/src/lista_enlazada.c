@@ -79,14 +79,13 @@ int array_contiene_elemento(uint32_t* array, uint64_t size_of_array, uint32_t el
 
 int lista_contiene_elemento(lista_t* lista, uint32_t elemento_a_buscar){
     nodo_t* current = lista->head;
-
     while(current != NULL){
         if (array_contiene_elemento(current->arreglo,current->longitud, elemento_a_buscar))
         {
             return 1;
         }
         current = current->next;
-        }
+    }
     return 0;
 }
 

@@ -2,15 +2,15 @@
 
 ### Ejercicio Lista Enlazada:
 
-[1] [Esquema de la estructura (agregar)](esquema_pedro.png)
+[1] ![Esquema de la estructura (agregar)](esquema_pedro.png)
 
 [2] Si dentro de una función cualquiera, creamos una lista haciendo `lista_t* mi_lista = nueva_lista();`, y luego otra haciendo `lista_t mi_otra_lista;` ¿en qué segmentos de memoria se alojan las siguientes variables?:
 
-- `mi_lista`: se va a alojar en el segmento HEAP, pues corresponde a una variable dinamica administrada por malloc. De todos modos, su puntero se va a alojar en el stack, pues es una variable local dentro de una funcion.
+- `mi_lista`: El puntero se aloja en el stack, porque es una variable local dentro de una función, pero la estructura se va a alojar en el segmento heap, pues corresponde a una variable dinamica administrada por malloc. 
 
 - `mi_otra_lista`: es simplemente la declaracion de la variable, entonces se va a alojar en el stack, pues aun no se le aloco memoria.
 
-- `mi_otra_lista.head`: tambien esta en el stack, pues es un campo de mi_otra_lista, que tambien esta en el stack. (validar)
+- `mi_otra_lista.head`: tambien esta en el stack, pues es un campo de mi_otra_lista (y aún no se pidió memoria con malloc), que tambien esta en el stack. 
 
 - `mi_lista->head`: tambien esta en el HEAP, pues es un campo de un struct que esta en el HEAP.
 
