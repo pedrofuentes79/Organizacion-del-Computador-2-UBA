@@ -6,31 +6,18 @@
 
 #include "checkpoints.h"
 
-#include "test-utils.h"
-#include "checkpoints.h"
-
-#define ARR_LENGTH  4
-#define ROLL_LENGTH 10
-
-static uint32_t x[ROLL_LENGTH];
-static double   f[ROLL_LENGTH];
-
-void shuffle(uint32_t max){
-	for (int i = 0; i < ROLL_LENGTH; i++) {
-		x[i] = (uint32_t) rand() % max;
-        	f[i] = ((float)rand()/(float)(RAND_MAX)) * max;
-	}
-}
 int main (void){
-	for (int i = 0; i < 100; i++) {
-		shuffle(1000);
-		printf("product_2_f(&result, %u, %.2f)", x[0], f[0]);
+	uint32_t x[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	float f[9] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 
-		uint32_t result = -1;
-		product_2_f(&result, x[0], f[0]);
-		printf("result: %u\n. %u", result, x[0]*f[0]);
-		assert(result == x[0]*f[0]);
-	}
+	double expected = f[0] * f[1] * f[2] * f[3] * f[4] * f[5] * f[6] * f[7] * f[8]
+		* x[0] * x[1] * x[2] * x[3] * x[4] * x[5] * x[6] * x[7] * x[8];
+	double result = 1.0/0.0;
+    product_9_f(&result, x[0], f[0], x[1], f[1], x[2], f[2], x[3], f[3],x[4], f[4], x[5], f[5], x[6], f[6], x[7], f[7], x[8], f[8]);
+
+	printf("Expected: %f\n", expected);
+	printf("Result: %f\n", result);
+	return 0;
 }
 
 

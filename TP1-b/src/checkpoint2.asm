@@ -73,7 +73,7 @@ alternate_sum_4_simplified:
 ; ojo, x7 ocupa solo 4 bytes, pero la pila se alinea a 8 bytes, por eso x8 esta en [rbp+24]
 
 ; uint32_t alternate_sum_8(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4, uint32_t x5, uint32_t x6, uint32_t x7, uint32_t x8);
-; registros y pila: x1[rdi], x2[rsi], x3[rdx], x4[rcx], x5[r8], x6[r9], x7[r10], x8[r11]
+; registros y pila: x1[rdi], x2[rsi], x3[rdx], x4[rcx], x5[r8], x6[r9], x7["r10"], x8["r11"]
 alternate_sum_8:
     ; Prologo
     push rbp
@@ -124,14 +124,14 @@ product_2_f:
 ;, uint32_t x1, float f1, uint32_t x2, float f2, uint32_t x3, float f3, uint32_t x4, float f4
 ;, uint32_t x5, float f5, uint32_t x6, float f6, uint32_t x7, float f7, uint32_t x8, float f8
 ;, uint32_t x9, float f9);
-;registros y pila: destination[rdi], x1[rsi], f1[xmm0], x2[rdx], f2[xmm1], x3[rsx], f3[xmm2], x4[r8], f4[xmm3]
+;registros y pila: destination[rdi], x1[rsi], f1[xmm0], x2[rdx], f2[xmm1], x3[rcx], f3[xmm2], x4[r8], f4[xmm3]
 ;	, x5[r9], f5[xmm4], x6[pila], f6[xmm5], x7[pila], f7[xmm6], x8[pila], f8[xmm7],
 ;	, x9[pila], f9[pila]
 product_9_f:
 	;prologo
 	push rbp
 	mov rbp, rsp
-
+	
 	;convertimos los flotantes de cada registro xmm en doubles
 	cvtss2sd xmm0, xmm0 ; f1
 	cvtss2sd xmm1, xmm1 ; f2
@@ -141,7 +141,7 @@ product_9_f:
 	cvtss2sd xmm5, xmm5 ; f6
 	cvtss2sd xmm6, xmm6 ; f7
 	cvtss2sd xmm7, xmm7 ; f8
-	movaps xmm8, [rsp+8] ; f9
+	cvtss2sd xmm8, [rsp+48] ; f9
 
 	;multiplicamos los doubles en xmm0 <- xmm0 * xmm1, xmmo * xmm2 , ...
 	mulsd xmm0, xmm1
@@ -151,10 +151,31 @@ product_9_f:
 	mulsd xmm0, xmm5
 	mulsd xmm0, xmm6
 	mulsd xmm0, xmm7
+	mulsd xmm0, xmm8
 
+	; ; convertimos los enteros en doubles y los multiplicamos por xmm0.
+	cvtsi2sd xmm1, rsi ; x1
+	cvtsi2sd xmm2, rdx ; x2
+	cvtsi2sd xmm3, rcx ; x3
+	cvtsi2sd xmm4, r8 ; x4
+	cvtsi2sd xmm5, r9 ; x5
+	cvtsi2sd xmm6, [rsp+16] ; x9
+	cvtsi2sd xmm7, [rsp+24] ; x8
+	cvtsi2sd xmm8, [rsp+32] ; x7
+	cvtsi2sd xmm9, [rsp+40] ; x6
 
-	; convertimos los enteros en doubles y los multiplicamos por xmm0.
-	; COMPLETAR
+	mulsd xmm0, xmm1
+	mulsd xmm0, xmm2
+	mulsd xmm0, xmm3
+	mulsd xmm0, xmm4
+	mulsd xmm0, xmm5
+	mulsd xmm0, xmm6
+	mulsd xmm0, xmm7
+	mulsd xmm0, xmm8
+	mulsd xmm0, xmm9
+
+	;movemos el resultado a destination
+	movsd [rdi], xmm0
 
 	; epilogo
 	pop rbp
