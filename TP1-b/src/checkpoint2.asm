@@ -21,7 +21,6 @@ global alternate_sum_4_using_c
 alternate_sum_4:
 	push rbp ; alineado a 16
 	mov rbp,rsp
-	; no me queda claro si tengo que alinear o no
 	sub rdi, rsi ; x1 - x2
 	add rdi, rdx ; x1 - x2 + x3
 	sub rdi, rcx ; x1 - x2 + x3 - x4
@@ -32,25 +31,28 @@ alternate_sum_4:
 ; uint32_t alternate_sum_4_using_c(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4);
 ; registros: x1[rdi], x2[rsi], x3[rdx], x4[rcx]
 alternate_sum_4_using_c:
-	;prologo
-	push rbp ; alineado a 16
-	mov rbp,rsp
-	; llamo a restar con x1 y x2
-	call restar_c
-	mov rbx, rax ; me guardo el resultado en rbx
-	; llamo a restar con x3 y x4, pasando el valor de x3 en rdi y x4 en rsi
-	mov rdi, rdx
-	mov rsi, rcx
-	call restar_c
-	mov rdx, rax ; me guardo el resultado en rdx
-	; llamo a sumar con el resultado de las dos restas
-	mov rdi, rbx
-	mov rsi, rdx
-	call sumar_c
-	mov rax, rax 
-	;epilogo
-	pop rbp
-	ret
+    ; prologo
+    push rbp              
+    mov rbp, rsp          
+
+    ; Llamar a restar_c(x1, x2)
+    call restar_c         ; rdi=x1, rsi=x2 ya están configurados
+    mov r10, rax          ; guardar el resultado de x1 - x2 en r10 (uso r10 porque es uno no volatil!)
+
+    ; Llamar a restar_c(x3, x4)
+    mov rdi, rdx          ; configurar x3 en rdi
+    mov rsi, rcx          ; configurar x4 en rsi
+    call restar_c         ; llamar a restar_c(x3, x4)
+    mov rdx, rax          ; guardar el resultado de x3 - x4 en rdx
+
+    ; Llamar a sumar_c(guardado1, guardado2)
+    mov rdi, r10          ; pasar el resultado de x1 - x2 en rdi
+    mov rsi, rdx          ; pasar el resultado de x3 - x4 en rsi
+    call sumar_c          ; llamar a sumar_c(guardado1, guardado2)
+
+    ; epilogo
+    pop rbp               
+    ret                   ; retornar el resultado en rax (ya esta ahi)
 
 
 
@@ -64,6 +66,12 @@ alternate_sum_4_simplified:
 	ret
 
 
+;NOTAS (borrar antes de entregar)
+; despues del prologo, en [rbp] tengo el valor antiguo de rbp
+; en [rbp+8] tengo la direccion de retorno (rip)
+; luego, en [rbp+16] tengo el valor de x7 y en [rbp+24] tengo el valor de x8
+; ojo, x7 ocupa solo 4 bytes, pero la pila se alinea a 8 bytes, por eso x8 esta en [rbp+24]
+
 ; uint32_t alternate_sum_8(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4, uint32_t x5, uint32_t x6, uint32_t x7, uint32_t x8);
 ; registros y pila: x1[rdi], x2[rsi], x3[rdx], x4[rcx], x5[r8], x6[r9], x7[r10], x8[r11]
 alternate_sum_8:
@@ -71,9 +79,9 @@ alternate_sum_8:
     push rbp
     mov rbp, rsp
 
-    ; Mover x7 y x8 a registros temporales
-    mov r10, [rbp+16] ; x7
-    mov r11, [rbp+24] ; x8
+    ; Mover x7 y x8 a r10 y r11
+    mov r10, [rbp+16] 
+    mov r11, [rbp+24] 
 
     ; Realizar las operaciones
     sub rdi, rsi ; x1 - x2
@@ -96,21 +104,19 @@ alternate_sum_8:
 ;void product_2_f(uint32_t * destination, uint32_t x1, float f1);
 ;registros: destination[rdi], x1[rsi], f1[xmm0]
 product_2_f:
-	;epilogo
+	;prologo
 	push rbp
 	mov rbp, rsp
 
-	;convertimos x1 y f1 a double y lo multiplicamos por f1
-	cvtsi2sd xmm1, rsi ; x1
-    cvtss2sd xmm2, xmm0 ; f1
-	mulsd xmm1, xmm2 ; x1 * f1
+	;convertimos x1 y f1 a single y lo multiplicamos por f1
+	cvtsi2ss xmm1, rsi ; x1
+	mulss xmm1, xmm0 ; x1 * f1
 
-	;movemos el resultado a destination
-	cvtsd2si rax, xmm1
+	;movemos el resultado a destination (convertido a entero TRUNCADO, por eso cvtT)
+	cvttss2si rax, xmm1
 	mov [rdi], rax
-
+	;epilogo
 	pop rbp
-	;prologo
 	ret
 
 
@@ -118,19 +124,34 @@ product_2_f:
 ;, uint32_t x1, float f1, uint32_t x2, float f2, uint32_t x3, float f3, uint32_t x4, float f4
 ;, uint32_t x5, float f5, uint32_t x6, float f6, uint32_t x7, float f7, uint32_t x8, float f8
 ;, uint32_t x9, float f9);
-;registros y pila: destination[rdi], x1[?], f1[?], x2[?], f2[?], x3[?], f3[?], x4[?], f4[?]
-;	, x5[?], f5[?], x6[?], f6[?], x7[?], f7[?], x8[?], f8[?],
-;	, x9[?], f9[?]
+;registros y pila: destination[rdi], x1[rsi], f1[xmm0], x2[rdx], f2[xmm1], x3[rsx], f3[xmm2], x4[r8], f4[xmm3]
+;	, x5[r9], f5[xmm4], x6[pila], f6[xmm5], x7[pila], f7[xmm6], x8[pila], f8[xmm7],
+;	, x9[pila], f9[pila]
 product_9_f:
 	;prologo
 	push rbp
 	mov rbp, rsp
 
 	;convertimos los flotantes de cada registro xmm en doubles
-	; COMPLETAR
+	cvtss2sd xmm0, xmm0 ; f1
+	cvtss2sd xmm1, xmm1 ; f2
+	cvtss2sd xmm2, xmm2 ; f3
+	cvtss2sd xmm3, xmm3 ; f4
+	cvtss2sd xmm4, xmm4 ; f5
+	cvtss2sd xmm5, xmm5 ; f6
+	cvtss2sd xmm6, xmm6 ; f7
+	cvtss2sd xmm7, xmm7 ; f8
+	movaps xmm8, [rsp+8] ; f9
 
 	;multiplicamos los doubles en xmm0 <- xmm0 * xmm1, xmmo * xmm2 , ...
-	; COMPLETAR
+	mulsd xmm0, xmm1
+	mulsd xmm0, xmm2
+	mulsd xmm0, xmm3
+	mulsd xmm0, xmm4
+	mulsd xmm0, xmm5
+	mulsd xmm0, xmm6
+	mulsd xmm0, xmm7
+
 
 	; convertimos los enteros en doubles y los multiplicamos por xmm0.
 	; COMPLETAR
