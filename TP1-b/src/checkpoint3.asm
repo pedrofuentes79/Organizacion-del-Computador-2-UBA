@@ -38,17 +38,14 @@ cantidad_total_de_elementos:
 		; si el puntero es null, corto
 		cmp rdi, 0
 		je .end_loop
-		; sumo la longitud del nodo actual y veo el siguiente nodo
 		
 		; leo la longitud del nodo
 		mov r8, [rdi + LONGITUD_OFFSET]
-		
-		and r8, [mask]
-		; shr r8, 32 ; shifteo 32  
-		
-		add rax, r8
 
-		mov rdi, [rdi]
+		and r8, [mask]	; me quedo con los primeros 32 bits
+		add rax, r8		; sumo la longitud del nodo a mi respuesta
+
+		mov rdi, [rdi]  ; avanzo
 		jmp .loop_nodos
 
 	.end_loop:
@@ -58,5 +55,32 @@ cantidad_total_de_elementos:
 ;extern uint32_t cantidad_total_de_elementos_packed(packed_lista_t* lista);
 ;registros: lista[?]
 cantidad_total_de_elementos_packed:
-	ret
+	; prologo
+	push rbp
+	mov rbp, rsp
+
+	; inicializo mi respuesta en 0
+	xor rax,rax
+
+	; en rdi tengo la direccion de la lista. quiero entonces ya tener el primer nodo
+	mov rdi, [rdi]
+
+	.loop_nodos:
+		; si el puntero es null, corto
+		cmp rdi, 0
+		je .end_loop
+		
+		; leo la longitud del nodo
+		mov r8, [rdi + PACKED_LONGITUD_OFFSET]
+
+		and r8, [mask]	; me quedo con los primeros 32 bits
+		add rax, r8		; sumo la longitud del nodo a mi respuesta
+
+		mov rdi, [rdi]  ; avanzo
+		jmp .loop_nodos
+
+	.end_loop:
+		pop rbp
+		ret
+
 
