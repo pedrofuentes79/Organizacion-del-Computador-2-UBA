@@ -5,19 +5,46 @@
 #include <assert.h>
 
 #include "checkpoints.h"
+#define ARR_LENGTH  2800
 
 int main (void){
-	uint32_t x[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-	float f[9] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+	
+	// inicializar un x de arr_length con cosas ahi
+	nodo_t *array[ARR_LENGTH];
+	uint32_t x[ARR_LENGTH];
+	for (int i = 0; i < ARR_LENGTH; i++) {
+		x[i] = i*2;
+	}
 
-	double expected = f[0] * f[1] * f[2] * f[3] * f[4] * f[5] * f[6] * f[7] * f[8]
-		* x[0] * x[1] * x[2] * x[3] * x[4] * x[5] * x[6] * x[7] * x[8];
-	double result = 1.0/0.0;
-    product_9_f(&result, x[0], f[0], x[1], f[1], x[2], f[2], x[3], f[3],x[4], f[4], x[5], f[5], x[6], f[6], x[7], f[7], x[8], f[8]);
+	for(int j=0; j<ARR_LENGTH; j++){
+		array[j] = calloc(1, sizeof(nodo_t));
+		array[j]->longitud = x[j];
+	}
 
-	printf("Expected: %f\n", expected);
-	printf("Result: %f\n", result);
-	return 0;
+	for(int j=0; j<ARR_LENGTH-1; j++){
+		array[j]->next = array[j+1];
+	}
+
+	lista_t lista;
+	lista.head = array[0];
+
+	nodo_t* nodo = lista.head;
+	uint32_t result = 0;
+
+	while(nodo != NULL){
+		result += nodo->longitud;
+		nodo = nodo->next;
+	}
+
+	printf("Cantidad total de elementos POSTA: %d\n", result);
+	uint32_t my_res = cantidad_total_de_elementos(&lista);
+	printf("Cantidad total de elementos: %d\n", my_res);
+
+	for(int j=0; j<ARR_LENGTH; j++){
+		free(array[j]);
+	}
+
+	return 1;
 }
 
 

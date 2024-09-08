@@ -37,6 +37,12 @@ typedef struct nodo_s {
     uint32_t longitud;     // Longitud del arreglo
 } nodo_t;
 
+// next: 8 bytes
+// categoria: 1 byte
+// arreglo: 8 bytes
+// longitud: 4 bytes
+
+
 typedef struct __attribute__((__packed__)) packed_nodo_s {
     struct packed_nodo_s* next;   // Siguiente elemento de la lista o NULL si es el final
     uint8_t categoria;     // Categoría del nodo
