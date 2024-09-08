@@ -74,8 +74,38 @@ strCmp:
 
 
 ; char* strClone(char* a)
+; registros a[rdi]
 strClone:
-	ret
+	;prologo
+	push rbp
+	mov rbp, rsp
+	mov rsi, rdi
+	xor rcx, rcx
+	.calc_len:
+        cmp byte [rsi + rcx], 0
+        je .alloc_mem
+        inc rcx
+        jmp .calc_len
+	.alloc_mem:
+        ; Reservar memoria para el nuevo string (rcx + 1 para el byte nulo)
+        mov rdi, rcx
+        inc rdi
+        call malloc
+        mov r8, rax  ; r8 apunta al nuevo string
+	mov rsi, rdi
+	xor rcx, rcx
+	.loop:
+		mov al, [rsi + rcx]
+		mov [r8 + rcx], al
+		cmp1 al, 0
+		je .end
+		inc rcx
+		jmp .loop
+	.end:
+		;epilogo
+		mov rax, r8
+		pop rbp
+		ret
 
 ; void strDelete(char* a)
 strDelete:
