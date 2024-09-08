@@ -2,7 +2,6 @@
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar:
-; (esta en bytes)
 NODO_LENGTH	EQU	32
 LONGITUD_OFFSET	EQU	24
 
@@ -11,7 +10,6 @@ PACKED_LONGITUD_OFFSET	EQU	17
 ;########### SECCION DE DATOS
 section .data
 	mask dq 0x0000_0000_FFFF_FFFF
-	; mask dq 0xFFFF_FFFF_0000_0000
 
 ;########### SECCION DE TEXTO (PROGRAMA)
 section .text
@@ -53,7 +51,7 @@ cantidad_total_de_elementos:
 		ret
 
 ;extern uint32_t cantidad_total_de_elementos_packed(packed_lista_t* lista);
-;registros: lista[?]
+;registros: lista[rdi]
 cantidad_total_de_elementos_packed:
 	; prologo
 	push rbp
