@@ -114,15 +114,82 @@ strClone:
 		ret
 
 ; void strDelete(char* a)
+; registros: a[rdi]
 strDelete:
-	ret
+	push rbp
+	mov rbp, rsp
+	cmp rdi, 0
+    je .end
+	.loop:
+		mov r8b, [rdi]
+		cmp r8b, 0
+		je .end
+		inc rdi
+		jmp .loop
+	.end:
+		pop rbp
+		ret
 
 ; void strPrint(char* a, FILE* pFile)
+; registros: a[rdi], pFile[rsi]
+section .data
+	message db "NULL", 0
+	message_len equ $ - message
 strPrint:
+	;prologo
+	push rbp
+	mov rbp, rsp
+	; me guardo mi string en rdx
+	mov rdx, rdi
+	; Abrir archivo (syscall open)
+    mov rax, 2              ; syscall número 2 es sys_open
+	mov rdi, rsi            ; nombre del archivo
+    syscall                  ; llamada al sistema (open)
+	.vacio:
+		mov r8b, [rdx]
+		cmp r8b, 0
+		je .writeNull
+		jne .loop
+	.writeNull:
+		mov rax, 1               ; syscall número 1 es sys_write
+		mov rsi, message         ; puntero al mensaje
+		mov rdx, message_len     ; longitud del mensaje
+		syscall                  ; llamada al sistema (write)
+    .loop:
+		mov r8b, [rdx]
+		cmp r8b, 0
+		je .end
+		mov rax, 1               ; syscall número 1 es sys_write
+		mov rsi, rdx             ; puntero al mensaje
+		mov rdx, 1               ; longitud del mensaje
+		syscall                  ; llamada al sistema (write)
+		inc rdx
+		jmp .loop
+	;epilogo
+	pop rbp
 	ret
 
 ; uint32_t strLen(char* a)
+; registros: a[rdi]
 strLen:
-	ret
+	push rbp
+	mov rbp, rsp
+	xor rcx, rcx
+	;hago el loop 
+	.loop:
+		mov r8b, [rdi]
+		test r8b, r8b ;esto tengo dudas si esta bien o mal ya que no sabia como chequear la diferencia entre el caracter nulo y un 0 comun 
+		je .end
+		cmp r8b, 0
+		je .skip
+		inc rcx
+	.skip:
+		inc rsi
+		jmp .loop
+	.end:
+		mov rax, rcx
+	;epilogo
+	pop rbp
+	ret 
 
 
