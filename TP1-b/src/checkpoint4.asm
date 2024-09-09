@@ -180,7 +180,7 @@ strLen:
 		mov r8b, [rdi]
 		test r8b, r8b ;esto tengo dudas si esta bien o mal ya que no sabia como chequear la diferencia entre el caracter nulo y un 0 comun 
 		je .end
-		cmp r8b, 0
+		cmp r8b, 0x30
 		je .skip
 		inc rcx
 	.skip:
