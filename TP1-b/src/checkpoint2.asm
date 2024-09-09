@@ -174,8 +174,9 @@ product_9_f:
 	mulsd xmm0, xmm8
 	mulsd xmm0, xmm9
 
+	cvttss2si eax, xmm0 ; hago la recomendacion de pasar de flotante a entero
 	;movemos el resultado a destination
-	movsd [rdi], xmm0
+	movsd [rdi], eax
 
 	; epilogo
 	pop rbp
