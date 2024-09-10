@@ -19,12 +19,16 @@ global alternate_sum_4_using_c
 ; uint32_t alternate_sum_4(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4);
 ; registros: x1[rdi], x2[rsi], x3[rdx], x4[rcx]
 alternate_sum_4:
+	; prologo
 	push rbp ; alineado a 16
 	mov rbp,rsp
+
 	sub rdi, rsi ; x1 - x2
 	add rdi, rdx ; x1 - x2 + x3
 	sub rdi, rcx ; x1 - x2 + x3 - x4
 	mov rax, rdi ; retorno en rax
+
+	;epilogo
 	pop rbp
 	ret
 
@@ -37,7 +41,7 @@ alternate_sum_4_using_c:
 
     ; Llamar a restar_c(x1, x2)
     call restar_c         ; rdi=x1, rsi=x2 ya están configurados
-    mov r10, rax          ; guardar el resultado de x1 - x2 en r10 (uso r10 porque es uno no volatil!)
+    mov r12, rax          ; guardar el resultado de x1 - x2 en r12 (uso r12 porque es uno no volatil!)
 
     ; Llamar a restar_c(x3, x4)
     mov rdi, rdx          ; configurar x3 en rdi
@@ -46,14 +50,13 @@ alternate_sum_4_using_c:
     mov rdx, rax          ; guardar el resultado de x3 - x4 en rdx
 
     ; Llamar a sumar_c(guardado1, guardado2)
-    mov rdi, r10          ; pasar el resultado de x1 - x2 en rdi
+    mov rdi, r12          ; pasar el resultado de x1 - x2 en rdi
     mov rsi, rdx          ; pasar el resultado de x3 - x4 en rsi
     call sumar_c          ; llamar a sumar_c(guardado1, guardado2)
 
     ; epilogo
-    pop rbp               
+    pop rbp    
     ret                   ; retornar el resultado en rax (ya esta ahi)
-
 
 
 ; uint32_t alternate_sum_4_simplified(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4);
@@ -79,9 +82,9 @@ alternate_sum_8:
     push rbp
     mov rbp, rsp
 
-    ; Mover x7 y x8 a r10 y r11
-    mov r10, [rbp+16] 
-    mov r11, [rbp+24] 
+    ; Mover x7 y x8 a r12 y r13
+    mov r12, [rbp+16] 
+    mov r13, [rbp+24] 
 
     ; Realizar las operaciones
     sub rdi, rsi ; x1 - x2
@@ -89,8 +92,8 @@ alternate_sum_8:
     sub rdi, rcx ; x1 - x2 + x3 - x4
     add rdi, r8  ; x1 - x2 + x3 - x4 + x5
     sub rdi, r9  ; x1 - x2 + x3 - x4 + x5 - x6
-    add rdi, r10 ; x1 - x2 + x3 - x4 + x5 - x6 + x7
-    sub rdi, r11 ; x1 - x2 + x3 - x4 + x5 - x6 + x7 - x8
+    add rdi, r12 ; x1 - x2 + x3 - x4 + x5 - x6 + x7
+    sub rdi, r13 ; x1 - x2 + x3 - x4 + x5 - x6 + x7 - x8
 
     ; Mover el resultado a rax
     mov rax, rdi
@@ -104,29 +107,47 @@ alternate_sum_8:
 ;void product_2_f(uint32_t * destination, uint32_t x1, float f1);
 ;registros: destination[rdi], x1[rsi], f1[xmm0]
 product_2_f:
-	;prologo
-	push rbp
-	mov rbp, rsp
+    ;prologo
+    push rbp
+    mov rbp, rsp
 
-	;convertimos x1 y f1 a single y lo multiplicamos por f1
-	cvtsi2ss xmm1, rsi ; x1
-	mulss xmm1, xmm0 ; x1 * f1
+	;pasamos todo a double y despues convertimos el resultado de mulsd a entero
+    cvtss2sd xmm0, xmm0 ; f1 <- double(f1)
+    cvtsi2sd xmm1, rsi ; x1 <- double(x1)
+	mulsd xmm0, xmm1 ; x1 <- x1 * f1
 
-	;movemos el resultado a destination (convertido a entero TRUNCADO, por eso cvtT)
-	cvttss2si rax, xmm1
-	mov [rdi], rax
-	;epilogo
-	pop rbp
-	ret
+    cvttsd2si rax, xmm0 ; x1 <- int(x1)
+    mov [rdi], rax
+ 
+    ;epilogo
+    pop rbp
+    ret
 
 
 ;extern void product_9_f(double * destination
 ;, uint32_t x1, float f1, uint32_t x2, float f2, uint32_t x3, float f3, uint32_t x4, float f4
 ;, uint32_t x5, float f5, uint32_t x6, float f6, uint32_t x7, float f7, uint32_t x8, float f8
 ;, uint32_t x9, float f9);
-;registros y pila: destination[rdi], x1[rsi], f1[xmm0], x2[rdx], f2[xmm1], x3[rcx], f3[xmm2], x4[r8], f4[xmm3]
-;	, x5[r9], f5[xmm4], x6[pila], f6[xmm5], x7[pila], f7[xmm6], x8[pila], f8[xmm7],
-;	, x9[pila], f9[pila]
+;registros y pila:  
+	; destination[rdi],
+	; x1[rsi], 
+	; f1[xmm0],
+	; x2[rdx],
+	; f2[xmm1],
+	; x3[rcx],
+	; f3[xmm2],
+	; x4[r8],
+	; f4[xmm3],
+	; x5[r9],
+	; f5[xmm4],
+	; x6[pila],
+	; f6[xmm5],
+	; x7[pila],
+	; f7[xmm6],
+	; x8[pila],
+	; f8[xmm7],
+	; x9[pila],
+	; f9[pila]
 product_9_f:
 	;prologo
 	push rbp
@@ -143,7 +164,7 @@ product_9_f:
 	cvtss2sd xmm7, xmm7 ; f8
 	cvtss2sd xmm8, [rsp+48] ; f9
 
-	;multiplicamos los doubles en xmm0 <- xmm0 * xmm1, xmmo * xmm2 , ...
+	;multiplicamos los doubles en xmm0 <- xmm0 * xmm1, xmm0 * xmm2 , ...
 	mulsd xmm0, xmm1
 	mulsd xmm0, xmm2
 	mulsd xmm0, xmm3
@@ -153,7 +174,7 @@ product_9_f:
 	mulsd xmm0, xmm7
 	mulsd xmm0, xmm8
 
-	; ; convertimos los enteros en doubles y los multiplicamos por xmm0.
+	;convertimos los enteros en doubles y los multiplicamos por xmm0.
 	cvtsi2sd xmm1, rsi ; x1
 	cvtsi2sd xmm2, rdx ; x2
 	cvtsi2sd xmm3, rcx ; x3
@@ -174,11 +195,10 @@ product_9_f:
 	mulsd xmm0, xmm8
 	mulsd xmm0, xmm9
 
-	cvttss2si eax, xmm0 ; hago la recomendacion de pasar de flotante a entero
 	;movemos el resultado a destination
-	movsd [rdi], eax
+	movsd [rdi], xmm0
 
-	; epilogo
+	;epilogo
 	pop rbp
 	ret
 

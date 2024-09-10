@@ -52,24 +52,49 @@ git push origin
 En este punto introductorio deberán responder algunas preguntas conceptuales relacionadas a lo que vimos en las clases teóricas y en la presentación de hoy. Las preguntas tienen que ver con _convención de llamada y bibliotecas compartidas_.
 
 - :pen_fountain: ¿Qué entienden por convencion de llamada? ¿Cómo está definida en la ABI de System V para 64 y 32 bits?
+	
+	Respuesta:
 	- La convencion de llamada son las reglas que nos dicen como se le pasan los argumentos a las funciones.
 	- En la ABI de System V para 64 y 32 bits, los parametros se pasan en los siguientes registros:
-		- TODO: chequear esta respuesta con diapos
-		- 64 bits: los primeros 6 argumentos van en los registros rdi,rsi,rdx,rcx,r8,r9
-		- 32 bits: todos los argumentos van por la pila
+
+		- <b>64 bits</b>: Los primeros 6 argumentos enteros van en los registros RDI, RSI, RDX, RCX, R8 y R9, de izquierda a derecha (según lo definido en el archivo .h). Los parámetros flotantes se pasan de izquierda a derecha en
+		XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7 respectivamente.
+		Si no hay registros disponibles para los parámetros enteros
+		y/o flotantes se pasarán de derecha a izquierda a través de
+		la pila haciendo PUSH. Las estructuras se tratan de una forma especial, si son grandes se pasa un puntero a la misma
+		como parámetro.
+
+		- <b>32 bits</b>: Todos los argumentos van por la pila (Los parámetros se pasarán de derecha a izquierda a través
+		de la pila haciendo PUSH).
 		
 - :pen_fountain: ¿Quién toma la responsabilidad de asegurar que se cumple la convención de llamada en `C`? ¿Quién toma la responsabilidad de asegurar que se cumple la convención de llamada en `ASM`?
+
+	Respuesta: 
 	- La convencion de llamada en C le corresponde al compilador, es decir, el codigo no va a compilar si a una funcion que recibe dos parametros le pasamos tres. Por otro lado, en `ASM`, es responsabilidad del programador.
+
 - :pen_fountain: ¿Qué es un stack frame? ¿A qué se le suele decir **prólogo y epílogo**?
-	- El stack frame es el espacio de la pila entre las variables recibidas y el tope de la pila actual.
-	- TODO: agregar ejemplo de lineas de las diapos
-	- Prologo: el codigo que se ejecuta al comienzo de la llamada a la funcion para preparar el stack frame, como preservar los valores de algunos registros.
-		- Aca se hacen los PUSH
-	- Epilogo: el codigo que se ejecuta al final de la funcion, donde se realizan los POP.
+
+	Respuesta: 
+	- El Stack Frame es el espacio de la pila entre las variables recibidas y el tope de la pila actual. Contiene información de retorno, almacenamiento local y espacio temporal en el contexto del llamado a una función (al realizar una cadena de invocaciones de funciones se apilan los stack frames sucesivamente).
+
+	![](/TP1-b/img/cadenaLlamados.png) 
+	
+	
+	- Prologo: El codigo que se ejecuta al comienzo de la llamada a la funcion para preparar el stack frame, como preservar los valores de algunos registros (Acá se hacen los PUSH). Es donde se reserva espacio en la pila para datos temporales, se preservan los valores de los registros no volatiles y se agrega padding para mantener la alineacion de 16bytes.
+
+	- Epilogo: El codigo que se ejecuta al final de la funcion, donde se realizan los POP (devolución de la pila al estado inicial) y se restauran los valores de los registros no volátiles.
+
 - :pen_fountain: ¿Cuál es el mecanismo utilizado para almacenar **variables temporales**?
+
+	Respuesta:
 	- Si es posible se usan registros porque son mas rapidos. De otro modo, se pueden almacenar en la pila dentro del stack frame.
+
 - :pen_fountain: ¿A cuántos bytes es necesario alinear la pila si utilizamos funciones de `libc`? ¿Si la pila está alienada a 16 bytes al realizarse una llamada función, cuál va a ser su alineamiento al ejecutar la primera instrucción de la función llamada?
-	- 
+
+	Respuesta:
+	- [Validar]
+	A 16 bytes, porque las funciones de otra biblioteca pueden hacer uso de operaciones de registros largos (XMM, YMM) que requieren datos alineados a 16 bytes, es por esto que el contrato de uso de un conjunto de instrucciones del procesador se traduce en un contrato de uso de nuestras funciones de bajo nivel.
+
 - :pen_fountain: Una actualización de bibliotecas realiza los siguientes cambios a distintas funciones. ¿Cómo se ven impactados los programas ya compilados?
 _Sugerencia:_ Describan la convención de llamada de cada una (en su versión antes y después del cambio).
 	- Una biblioteca de procesamiento cambia la estructura `pixel_t`:
@@ -80,10 +105,14 @@ _Sugerencia:_ Describan la convención de llamada de cada una (en su versión an
 	- La función `uint16_t registrar_usuario(char* nombre, char* contraseña)` registra un usuario y devuelve su ID. Para soportar más usuarios se cambia el tipo de retorno por `uint64_t`.
 	- La función `void cambiar_nombre(uint16_t user_id, char* nuevo_nombre)` también recibe la misma actualización. ¿Qué sucede ahora?
 	- Se reordenan los parámetros de `int32_t multiplicar(float a, int32_t b)`.
+
+	Respuesta: ??
 	
 Una vez analizados los casos específicos describan la situación general:
 - :pen_fountain: ¿Qué sucede si una función externa utilizada por nuestro programa _(Es decir, que vive en una **biblioteca compartida**)_ cambia su interfaz (parámetros o tipo devuelto) luego de una actualización?
-	- Los programas que ya esten compilados pueden fallar en su ejecucion, puesto que van a ejecutar otros binarios que esperan recibir ciertos parametros, pero nuestros programas no saben que cambio la interfaz.
+
+	Respuesta:
+	- [Validar] (Al recompilar) los programas que ya esten compilados pueden fallar en su ejecucion, puesto que van a ejecutar otros binarios que esperan recibir ciertos parametros, pero nuestros programas no saben que cambio la interfaz.
 
 ## Ejercicio 1: C/ASM pasaje de parámetros
 
