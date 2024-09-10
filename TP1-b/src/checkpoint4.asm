@@ -3,15 +3,19 @@ extern free
 extern fprintf
 
 section .data
+message db "NULL", 0
+message_len equ $ - message
 
 section .text
-global strLen
+
 global strCmp
 global strClone
 global strDelete
 global strPrint
+global strLen
 
 ; ** String **
+
 
 ; int32_t strCmp(char* a, char* b)
 ; registros: a[rdi], b[rsi]
@@ -84,56 +88,49 @@ strClone:
 	;prologo
 	push rbp
 	mov rbp, rsp
-	mov rsi, rdi
-	xor rcx, rcx
-	.calc_len:
-        cmp byte [rsi + rcx], 0
-        je .alloc_mem
-        inc rcx
-        jmp .calc_len
-	.alloc_mem:
-        ; Reservar memoria para el nuevo string (rcx + 1 para el byte nulo)
-        mov rdi, rcx
-        inc rdi
-        call malloc
-        mov r8, rax  ; r8 apunta al nuevo string
-	mov rsi, rdi
-	xor rcx, rcx
+	mov rbx, rdi ; me guardo el puntero al string original
+
+	; llamar a strLen y guardarlo en rcx
+	call strLen
+	mov rdi, rax
+	add rdi, 1 ; sumo 1 para el caracter nulo
+	call malloc
+	mov r8,rax ; en r8 esta el puntero al espacio de memoria libre para llenarlo con el str
+
+
 	.loop:
-		mov al, [rsi + rcx]
-		mov [r8 + rcx], al
-		cmp al, 0
+		mov r9b, [rbx] ; leo el primer caracter
+		cmp r9b, 0     ; si es 0, corto
 		je .end
-		inc rcx
-		jmp .loop
+		mov [r8], r9b  ; copio el caracter
+		inc rbx 	   ; incrementamos y vamos al sig caracter
+		inc r8 		   ; incrementamos y vamos a la sig pos vacia
+		jmp .loop 		
 	.end:
 		;epilogo
-		mov rax, r8
+		mov byte [r8], 0
 		pop rbp
 		ret
+	
 
 ; void strDelete(char* a)
 ; registros: a[rdi]
 strDelete:
 	push rbp
 	mov rbp, rsp
-	cmp rdi, 0
+	cmp rdi, 0		; si el puntero es null
     je .end
-	.loop:
-		mov r8b, [rdi]
-		cmp r8b, 0
-		je .end
-		inc rdi
-		jmp .loop
+	
+	call free
+
 	.end:
+		;prologo
 		pop rbp
 		ret
 
 ; void strPrint(char* a, FILE* pFile)
 ; registros: a[rdi], pFile[rsi]
-section .data
-	message db "NULL", 0
-	message_len equ $ - message
+
 strPrint:
 	;prologo
 	push rbp
@@ -169,26 +166,27 @@ strPrint:
 		pop rbp
 		ret
 
+
 ; uint32_t strLen(char* a)
 ; registros: a[rdi]
 strLen:
-	xor rax, rax
-	ret
+	; prologo
+	push rbp
+	mov rbp, rsp
 
+	xor rcx, rcx ; contador de longitud en 0
 	
-	; xor rcx, rcx ; contador de longitud en 0
-	
-	; .loop:
-	; 	mov r8b, [rdi]
-	; 	cmp r8b, 0
-	; 	je .end
-	; 	add rcx, 1
-	; 	inc rdi
-	; 	jmp .loop
-	; .end:
-	; 	;epilogo
-	; 	pop rbp
-	; 	mov rax, rcx
-	; 	ret 
+	.loop:
+		mov r8b, [rdi]
+		cmp r8b, 0
+		je .end
+		add rcx, 1
+		inc rdi
+		jmp .loop
+	.end:
+		;epilogo
+		pop rbp
+		mov rax, rcx
+		ret 
 
 
