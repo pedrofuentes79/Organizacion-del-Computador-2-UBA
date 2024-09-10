@@ -8,9 +8,9 @@
 #define ARR_LENGTH  2800
 
 int main (void){
-	uint32_t result = 0;
-	product_2_f(&result, 2, 3.0);
-	printf("result: %u\n", result);
+	char a[] = "Omega 4";
+	uint32_t res = strLen(a);
+	printf("res:%d\n", res);
 }
 
 

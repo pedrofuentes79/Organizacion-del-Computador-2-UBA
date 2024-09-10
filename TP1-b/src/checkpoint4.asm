@@ -172,6 +172,7 @@ strPrint:
 ; uint32_t strLen(char* a)
 ; registros: a[rdi]
 strLen:
+	xor rax, rax
 	ret
 
 	
