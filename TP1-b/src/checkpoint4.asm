@@ -103,7 +103,7 @@ strClone:
 	.loop:
 		mov al, [rsi + rcx]
 		mov [r8 + rcx], al
-		cmp1 al, 0
+		cmp al, 0
 		je .end
 		inc rcx
 		jmp .loop
@@ -165,9 +165,11 @@ strPrint:
 		syscall                  ; llamada al sistema (write)
 		inc rdx
 		jmp .loop
-	;epilogo
-	pop rbp
-	ret
+	
+	.end
+		;epilogo
+		pop rbp
+		ret
 
 ; uint32_t strLen(char* a)
 ; registros: a[rdi]

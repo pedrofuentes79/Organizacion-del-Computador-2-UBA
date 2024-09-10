@@ -116,8 +116,8 @@ product_2_f:
     cvtsi2sd xmm1, rsi ; x1 <- double(x1)
 	mulsd xmm0, xmm1 ; x1 <- x1 * f1
 
-    cvttsd2si rax, xmm0 ; x1 <- int(x1)
-    mov [rdi], rax
+    cvttsd2si eax, xmm0 ; x1 <- int(x1)
+    mov [rdi], eax
  
     ;epilogo
     pop rbp

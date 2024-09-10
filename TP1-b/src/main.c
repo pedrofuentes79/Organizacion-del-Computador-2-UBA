@@ -8,7 +8,9 @@
 #define ARR_LENGTH  2800
 
 int main (void){
-	return 0;
+	uint32_t result = 0;
+	product_2_f(&result, 2, 3.0);
+	printf("result: %u\n", result);
 }
 
 
