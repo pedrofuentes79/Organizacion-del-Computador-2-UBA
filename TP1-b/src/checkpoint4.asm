@@ -5,12 +5,11 @@ extern fprintf
 section .data
 
 section .text
-
+global strLen
 global strCmp
 global strClone
 global strDelete
 global strPrint
-global strLen
 
 ; ** String **
 
@@ -165,8 +164,7 @@ strPrint:
 		syscall                  ; llamada al sistema (write)
 		inc rdx
 		jmp .loop
-	
-	.end
+	.end:
 		;epilogo
 		pop rbp
 		ret
@@ -174,24 +172,22 @@ strPrint:
 ; uint32_t strLen(char* a)
 ; registros: a[rdi]
 strLen:
-	push rbp
-	mov rbp, rsp
-	xor rcx, rcx
-	;hago el loop 
-	.loop:
-		mov r8b, [rdi]
-		test r8b, r8b ;esto tengo dudas si esta bien o mal ya que no sabia como chequear la diferencia entre el caracter nulo y un 0 comun 
-		je .end
-		cmp r8b, 0x30
-		je .skip
-		inc rcx
-	.skip:
-		inc rsi
-		jmp .loop
-	.end:
-		mov rax, rcx
-	;epilogo
-	pop rbp
-	ret 
+	ret
+
+	
+	; xor rcx, rcx ; contador de longitud en 0
+	
+	; .loop:
+	; 	mov r8b, [rdi]
+	; 	cmp r8b, 0
+	; 	je .end
+	; 	add rcx, 1
+	; 	inc rdi
+	; 	jmp .loop
+	; .end:
+	; 	;epilogo
+	; 	pop rbp
+	; 	mov rax, rcx
+	; 	ret 
 
 
