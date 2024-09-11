@@ -112,7 +112,7 @@ Una vez analizados los casos específicos describan la situación general:
 - :pen_fountain: ¿Qué sucede si una función externa utilizada por nuestro programa _(Es decir, que vive en una **biblioteca compartida**)_ cambia su interfaz (parámetros o tipo devuelto) luego de una actualización?
 
 	Respuesta:
-	- [Validar] (Al recompilar) los programas que ya esten compilados pueden fallar en su ejecucion, puesto que van a ejecutar otros binarios que esperan recibir ciertos parametros, pero nuestros programas no saben que cambio la interfaz.
+	- Los programas que ya esten compilados pueden fallar en su ejecucion, puesto que van a ejecutar otros binarios que esperan recibir ciertos parametros, pero nuestros programas no saben que cambio la interfaz.
 
 ## Ejercicio 1: C/ASM pasaje de parámetros
 
@@ -201,6 +201,7 @@ Además, para habilitar syntax highlighting, pueden opcionalmente instalar el pa
 pip install pygments
 ``` 
 
+# HACER!!!!!!!!!!!!!!!!
 ### Ejercicio
 En una máquina de uno de los labos de la facultad, nos encontramos un _pendrive_ con un programa ejecutable de linux adentro.
 Investigando un poco vimos que se trata de un programa de prueba interno de una importante compañía de software, que sirve para probar la validez de claves para su sistema operativo.
