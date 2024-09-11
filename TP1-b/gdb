@@ -1,0 +1,50 @@
+Stack level 0, frame at 0x7fffffffdf10:
+ rip = 0x555555555512 in print_authentication_message (helper.c:10); saved rip = 0x5555555552e5
+ called by frame at 0x7fffffffdf40
+ source language c.
+ Arglist at 0x7fffffffdf00, args: miss=1
+ Locals at 0x7fffffffdf00, Previous frame's sp is 0x7fffffffdf10
+ Saved registers:
+  rbp at 0x7fffffffdf00, rip at 0x7fffffffdf08
+>>> 
+
+>>> b print_authentication_message
+>>> printear un cacho del stack
+
+>>> x /50x $rsp
+0x7fffffffdef0: 0x00000063      0x00000000      0xb7e79e00      0x00000001
+0x7fffffffdf00: 0xffffdf30      0x00007fff      0x555552e5      0x00005555
+0x7fffffffdf10: 0xffffe3c8      0x00007fff      0x5555ff00      0x00005555
+0x7fffffffdf20: 0x0000009d      0x00000000      0x55557d68      0x00000001
+0x7fffffffdf30: 0xffffdf60      0x00007fff      0x5555534e      0x00005555
+0x7fffffffdf40: 0xffffe3c8      0x00007fff      0xffffdfa0      0x00007fff
+0x7fffffffdf50: 0x5555ff00      0x00005555      0xb7e79e00      0x8cae4a54
+0x7fffffffdf60: 0xffffdfd0      0x00007fff      0x55555487      0x00005555
+0x7fffffffdf70: 0xffffe0e8      0x00007fff      0x00000000      0x00000002
+0x7fffffffdf80: 0x00000000      0x00000003      0x5555fd50      0x00005555
+0x7fffffffdf90: 0xffffe3c8      0x00007fff      0x5555fd20      0x00005555
+0x7fffffffdfa0: 0x30687465      0x00000000      0x00000000      0x00000000
+0x7fffffffdfb0: 0x00000002      0x9d0d0a0a
+>>> p *(char**) 0x7fffffffdf4\0
+Invalid character '\' in expression.
+>>> p *(char**) 0x7fffffffdf40
+$6 = 0x7fffffffe3c8 "clave"
+>>> p *(char**) 0x7fffffffdf50
+$7 = 0x55555555ff00 "clave_10.10.13.157"
+>>> p *(char**) 0x7fffffffdf60
+$8 = 0x7fffffffdfd0 "\002"
+>>> p *(char**) 0x7fffffffdf70
+$9 = 0x7fffffffe0e8 "\224\343\377\377\377\177"
+>>> p *(char**) 0x7fffffffdf80
+$10 = 0x300000000 <error: Cannot access memory at address 0x300000000>
+>>> p *(char**) 0x7fffffffdf00
+$11 = 0x7fffffffdf30 "`\337\377\377\377\177"
+>>> p *(char**) 0x7fffffffdf90
+$12 = 0x7fffffffe3c8 "clave"
+>>> p *(char**) 0x7fffffffdfa0
+$13 = 0x30687465 <error: Cannot access memory at address 0x30687465>
+>>> p *(char**) 0x7fffffffdfb0
+$14 = 0x9d0d0a0a00000002 <error: Cannot access memory at address 0x9d0d0a0a00000002>
+>>> p *(char**) 0x7fffffffdfc0
+$15 = 0x0
+>>> 
