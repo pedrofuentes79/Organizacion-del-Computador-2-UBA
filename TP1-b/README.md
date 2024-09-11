@@ -217,7 +217,24 @@ Se pide:
 
 1. Correr el programa con `gdb` y poner un breakpoint en la función que imprime el mensaje de autenticación exitosa/fallida.
 2. :pen_fountain: Imprimir una porción adecuada del stack, con un formato adecuado para ver si podemos encontrar la clave.
+0x7fffffffdef0: 0x00000063      0x00000000      0xb7e79e00      0x00000001
+0x7fffffffdf00: 0xffffdf30      0x00007fff      0x555552e5      0x00005555
+0x7fffffffdf10: 0xffffe3c8      0x00007fff      0x5555ff00      0x00005555
+0x7fffffffdf20: 0x0000009d      0x00000000      0x55557d68      0x00000001
+0x7fffffffdf30: 0xffffdf60      0x00007fff      0x5555534e      0x00005555
+0x7fffffffdf40: 0xffffe3c8      0x00007fff      0xffffdfa0      0x00007fff
+0x7fffffffdf50: 0x5555ff00      0x00005555      0xb7e79e00      0x8cae4a54
+0x7fffffffdf60: 0xffffdfd0      0x00007fff      0x55555487      0x00005555
+0x7fffffffdf70: 0xffffe0e8      0x00007fff      0x00000000      0x00000002
+0x7fffffffdf80: 0x00000000      0x00000003      0x5555fd50      0x00005555
+0x7fffffffdf90: 0xffffe3c8      0x00007fff      0x5555fd20      0x00005555
+0x7fffffffdfa0: 0x30687465      0x00000000      0x00000000      0x00000000
+0x7fffffffdfb0: 0x00000002      0x9d0d0a0a
+
+>>> p *(char**) 0x7fffffffdf50
+$7 = 0x55555555ff00 "clave_10.10.13.157"
 3. :pen_fountain: ¿En que función se encuentra la clave? Explicar el mecanismo de como se llega a encontrar la función en la que se calcula la clave.
+- Para encontrar la clave usamos `info functions` en distintos puntos de ejecucion, y vimos la funcion `print_authentication_message`. En esta funcion inspeccionamos el stack y encontramos la clave en una de las posiciones.
 
 ### Ayuda de GDB:
 - :exclamation: El comando `backtrace` de gdb permite ver el stack de llamados hasta el momento actual de la ejecución del programa, y el comando `frame` permite cambiar al frame determinado. 
