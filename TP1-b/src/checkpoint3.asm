@@ -38,12 +38,13 @@ cantidad_total_de_elementos:
 		je .end_loop
 		
 		; leo la longitud del nodo
-		mov r8, [rdi + LONGITUD_OFFSET]
+		mov r8d, [rdi + LONGITUD_OFFSET]
 
-		and r8, [mask]	; me quedo con los primeros 32 bits
-		add rax, r8		; sumo la longitud del nodo a mi respuesta
+		; sumo la longitud del nodo a mi respuesta
+		add rax, r8		
 
-		mov rdi, [rdi]  ; avanzo
+		; avanzo
+		mov rdi, [rdi]  
 		jmp .loop_nodos
 
 	.end_loop:
@@ -69,12 +70,13 @@ cantidad_total_de_elementos_packed:
 		je .end_loop
 		
 		; leo la longitud del nodo
-		mov r8, [rdi + PACKED_LONGITUD_OFFSET]
+		mov r8d, [rdi + PACKED_LONGITUD_OFFSET]
 
-		and r8, [mask]	; me quedo con los primeros 32 bits
-		add rax, r8		; sumo la longitud del nodo a mi respuesta
+		; sumo la longitud del nodo a mi respuesta
+		add rax, r8		
 
-		mov rdi, [rdi]  ; avanzo
+		; avanzo
+		mov rdi, [rdi]  
 		jmp .loop_nodos
 
 	.end_loop:
