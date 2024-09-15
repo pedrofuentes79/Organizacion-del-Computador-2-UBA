@@ -1,19 +1,20 @@
 section .rodata
 ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
 ; coeficientes escala de grises
-mask_blue:  times 4 dd 0x00_FF_00_00
-mask_green: times 4 dd 0x00_00_FF_00
-mask_red: times 4 dd 0x00_00_00_FF
 
-red times 4 dd 0.2126
-green times 4 dd 0.7152
-blue times 4 dd 0.0722
-alpha: times 4 dd 0x00_00_00_FF
-; asi es como veo la mascara. La escribo abajo 'al reves' porque asi se guarda en memoria. Fuck little endian.
-; mask_shuf db 0x0F, 0x0B, 0x07, 0x03, 0x0E, 0x0A, 0x06, 0x02, 0x0D, 0x09, 0x05, 0x01, 0x0C, 0x08, 0x04, 0x00
+	; mascaras para aplicar el filtro
+	mask_coef_blue:  times 4 dd 0x00_FF_00_00
+	mask_coef_green: times 4 dd 0x00_00_FF_00
+	mask_coef_red:   times 4 dd 0x00_00_00_FF
 
-mask_shuf db 0x00, 0x04, 0x08, 0x0C, 0x01, 0x05, 0x09, 0x0D, 0x02, 0x06, 0x0A, 0x0E, 0x03, 0x07, 0x0B, 0x0F
+	; coeficientes para el filtro (calculo luminosidad)
+	coef_red: times 4 dd 0.2126
+	coef_green: times 4 dd 0.7152
+	coef_blue: times 4 dd 0.0722
+	coef_alph: times 4 dd 0xFF_00_00_00
 
+mask_shuf db 0x03, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00
+mask_xor times 4 db 0xFF, 0x00, 0x00, 0x00
 
 section .text
 
@@ -55,90 +56,81 @@ EJERCICIO_1_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ;   - height: El alto en píxeles de `src` y `dst`.
 global ej1
 ej1:
-	; Te recomendamos llenar una tablita acá con cada parámetro y su
-	; ubicación según la convención de llamada. Prestá atención a qué
-	; valores son de 64 bits y qué valores son de 32 bits.
-	;
-	; rdi = rgba_t*  dst
-	; rsi = rgba_t*  src
-	; rdx = uint32_t width
-	; rcx = uint32_t height
 
+	;prologo
 	push rbp
 	mov rbp, rsp
 
-	sub rsp, 16*4 ; guardo 16*4 bytes para 3 xmm
+	;guardamos memoria para los registros volatiles
+	sub rsp, 16*5 
 	movaps [rbp-16], xmm8
 	movaps [rbp-32], xmm9
 	movaps [rbp-48], xmm10
 	movaps [rbp-64], xmm11
+	movaps [rbp-80], xmm12
 
-
-	movdqu xmm0, [red]
-	movdqu xmm1, [green]
-	movdqu xmm2, [blue]
-	movdqu xmm3, [alpha]
-	
-
-	movdqu xmm8, [mask_red]
-	movdqu xmm9, [mask_green]
-	movdqu xmm10, [mask_blue]
+	;guardamos en registros los coeficientes y las máscaras para operar mejor
+	movdqu xmm0, [coef_red]
+	movdqu xmm1, [coef_green]
+	movdqu xmm2, [coef_blue]
+	movdqu xmm3, [coef_alph]
+	movdqu xmm8, [mask_coef_red]
+	movdqu xmm9, [mask_coef_green]
+	movdqu xmm10, [mask_coef_blue]
 	movdqu xmm11, [mask_shuf]
+	movdqu xmm12, [mask_xor]
 
-
-	xor r8, r8 ; contador de pixeles vistos
-
-	; pixeles por ver
-	mov r9, rdx
+	; contador de iteraciones necesarias [r9] = totalPixeles / pixelPorIteracion = width * height / 4
+	; 16 bytes por iteracion y 4 bytes por pixel --> 4 pixeles por iteracion 
+	xor r8, r8 
+	mov r9, rdx 
 	imul r9, rcx
-	shr r9, 2 ; divido por 4 (4 pixeles por iteracion)
+	shr r9, 2 
 
 	.loop:
 		cmp r8, r9
 		je .fin
 
-		movdqu xmm4, [rsi] ; leo 4 pixeles de src
+		movdqu xmm4, [rsi] ; leo 4 pixeles de src (1 pixel = 4 bytes)
+		; xmm4 = a0 b0 g0 r0 | a1 b1 g1 r1 | a2 b2 g2 r2 | a3 b3 g3 r3
 	
-
 		; parte roja
-		movdqa xmm5, xmm4
-		pand xmm5, xmm8
-		; no shifteo pues ya esta en la posicion correcta. xmm5: |a0 b0 g0 r0|...
-		cvtdq2ps xmm5, xmm5 ; packed doubleword 2 packed single. osea, convierto de integer a float. es doubleword porque quedo 00_00_00_RR, 32 bits.
-		mulps xmm5, xmm0    ; multiplico por el coeficiente
-		cvtps2dq xmm5, xmm5 ; packed single 2 packed SIGNED doubleword integer. osea, convierto de float a integer. TRUNCO?
+		movdqa xmm5, xmm4	; xmm5 = xmm4
+		pand xmm5, xmm8	    ; xmm5 = 00_00_00_rr | ...
+		cvtdq2ps xmm5, xmm5 ; packed doubleword 2 packed single.
+							; convierto de integer a float (es doubleword porque quedo 00_00_00_RR, 32 bits)
+		mulps xmm5, xmm0    ; xmm5 = |(0,0,0,0.2126*r0)|(0,0,0,0.2126*r1)|
 
 		; parte verde
-		movdqa xmm6, xmm4
-		pand xmm6, xmm9
-		psrld xmm6, 8 ; desplazo 8 bits a la derecha 
-		cvtdq2ps xmm6, xmm6
-		mulps xmm6, xmm1
-		cvtps2dq xmm6, xmm6
+		movdqa xmm6, xmm4	; xmm6 = xmm4
+		pand xmm6, xmm9		; xmm6 = 00_00_gg_00 | ...
+		psrld xmm6, 8 		; xmm6 = 00_00_00_gg | ...
+		cvtdq2ps xmm6, xmm6 ; integer -> float
+		mulps xmm6, xmm1 	; xmm6 = (0,0,0,0.7152*g0) | ... 
 
 		; parte azul (se podria no usar xmm7 y pisar directo el xmm4...)
-		movdqa xmm7, xmm4
-		pand xmm7, xmm10
-		psrld xmm7, 16 ; desplazo 24 bits a la derecha
-		cvtdq2ps xmm7, xmm7
-		mulps xmm7, xmm2
-		cvtps2dq xmm7, xmm7
+		movdqa xmm7, xmm4	; xmm7 = xmm4
+		pand xmm7, xmm10	; xmm7 = 00_bb_00_00 | ...
+		psrld xmm7, 16 		; xmm7 = 00_00_00_bb | ...
+		cvtdq2ps xmm7, xmm7	; integer -> float
+		mulps xmm7, xmm2	; xmm7 = (0,0,0,0.0722*b) | ...
 
-		; empaqueto para armar el pixel
+		; xmm5 = (0,0,0,0.0722*b0+0.7152*g0+0.2126*r0) | ...
+		; xmm5 = (0,0,0,lum0) | ...
+		addps xmm5, xmm6
+		addps xmm5, xmm7
 
-		packusdw xmm5, xmm6
-		; xmm5 = g3 g2 g1 g0 r3 r2 r1 r0 (16 bits each)
+		; xmm5 = lum0 | lum1 | ...
+		cvtps2dq xmm5, xmm5 ; cada lum ocupa 32 bits (4 bytes)
+		packusdw xmm5, xmm5 ; cada lum ocupa 16 bits (2 byte)
+		packuswb xmm5, xmm5 ; cada lum ocupa 8 bits (1 byte)
 
-		packusdw xmm7, xmm3
-		; xmm7 = a3 a2 a1 a0 b3 b2 b1 b0 (16 bits each)
-
-		packuswb xmm5, xmm7
-		; xmm5 = a3 a2 a1 a0 b3 b2 b1 b0 g3 g2 g1 g0 r3 r2 r1 r0 (8 bits each)
-
-		; reordenar con shuf
 		pshufb xmm5, xmm11
+		por xmm5, xmm3
+		; xmm5 = l3 l2 l1 l0 ... l3 l2 l1 l0 (1byte each)
+		
 
-		movdqu [rdi], xmm5 ; guardo el pixel en dst
+		movdqu [rdi], xmm5 ; escribo los 4 pixeles en dst
 		
 		; avanzo 4 pixeles en los punteros a memoria (16 bytes)
 		add rsi, 16
@@ -152,7 +144,9 @@ ej1:
 		movaps xmm8, [rbp-16]  ; Restaura xmm8
 		movaps xmm9, [rbp-32]  ; Restaura xmm9
 		movaps xmm10, [rbp-48] ; Restaura xmm10
-		add rsp, 64
+		movaps xmm11, [rbp-64] ; Restaura xmm11
+		movaps xmm12, [rbp-80] ; Restaura xmm12
+		add rsp, 16*5
 		pop rbp
 		ret
 
