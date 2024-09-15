@@ -62,12 +62,6 @@ ej1:
 	mov rbp, rsp
 
 	;guardamos memoria para los registros volatiles
-	sub rsp, 16*4 
-	movaps [rbp-16], xmm8
-	movaps [rbp-32], xmm9
-	movaps [rbp-48], xmm10
-	movaps [rbp-64], xmm11
-	;movaps [rbp-80], xmm12
 
 	;guardamos en registros los coeficientes y las máscaras para operar mejor
 	movdqu xmm0, [coef_red]
@@ -78,7 +72,6 @@ ej1:
 	movdqu xmm9, [mask_coef_green]
 	movdqu xmm10, [mask_coef_blue]
 	movdqu xmm11, [mask_shuf]
-	; movdqu xmm12, [mask_xor]
 
 	; contador de iteraciones necesarias [r9] = totalPixeles / pixelPorIteracion = width * height / 4
 	; 16 bytes por iteracion y 4 bytes por pixel --> 4 pixeles por iteracion 
@@ -144,11 +137,5 @@ ej1:
 		jmp .loop
  
 	.fin:
-		movaps xmm8, [rbp-16]  ; Restaura xmm8
-		movaps xmm9, [rbp-32]  ; Restaura xmm9
-		movaps xmm10, [rbp-48] ; Restaura xmm10
-		movaps xmm11, [rbp-64] ; Restaura xmm11
-		;movaps xmm12, [rbp-80] ; Restaura xmm12
-		add rsp, 16*4
 		pop rbp
 		ret
