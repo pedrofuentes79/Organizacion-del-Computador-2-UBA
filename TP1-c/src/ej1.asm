@@ -1,14 +1,16 @@
 section .rodata ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
 	; mascaras para aplicar el filtro
-	mask_red:  dq 0x00FF0000, 0x00FF0000, 0x00FF0000, 0x00FF0000
-    mask_green: dq 0x0000FF00, 0x0000FF00, 0x0000FF00, 0x0000FF00
-    mask_blue:  dq 0x000000FF, 0x000000FF, 0x000000FF, 0x000000FF
-	mask_alpha: dq 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000
-
+	mask_blue:  times 4 dd 0x00_FF_00_00
+	mask_green: times 4 dd 0x00_00_FF_00
+	mask_red: times 4 dd 0x00_00_00_FF
+	alpha: times 4 dd 0x00_00_00_FF
+	
 	; coeficientes para el filtro (calculo luminosidad)
-    coef_red:  dq 0.2126, 0.2126, 0.2126, 0.2126
-    coef_green: dq 0.7152, 0.7152, 0.7152, 0.7152
-    coef_blue:  dq 0.0722, 0.0722, 0.0722, 0.0722
+	coef_red times 4 dd 0.2126
+	coef_green times 4 dd 0.7152
+	coef_blue times 4 dd 0.0722
+	alpha: times 4 dd 0x00_00_00_FF
+
 
 section .text
 
@@ -59,7 +61,7 @@ ej1: ; rdi = dst, rsi = src, rdx = width, rcx = height
 	shr rax, 2		; rax = rax / 4
 	mov rcx, rax	; rcx = rax = #iteraciones
 
-	; cargo en xmm8 los bytes de luminosidad
+	; cargo los coeficientes
     movdqu xmm1, [coef_red]
     movdqu xmm2, [coef_green]
     movdqu xmm3, [coef_blue]

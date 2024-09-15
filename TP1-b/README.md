@@ -92,21 +92,55 @@ En este punto introductorio deberán responder algunas preguntas conceptuales re
 - :pen_fountain: ¿A cuántos bytes es necesario alinear la pila si utilizamos funciones de `libc`? ¿Si la pila está alienada a 16 bytes al realizarse una llamada función, cuál va a ser su alineamiento al ejecutar la primera instrucción de la función llamada?
 
 	Respuesta:
-	- [Validar]
+	- 
 	A 16 bytes, porque las funciones de otra biblioteca pueden hacer uso de operaciones de registros largos (XMM, YMM) que requieren datos alineados a 16 bytes, es por esto que el contrato de uso de un conjunto de instrucciones del procesador se traduce en un contrato de uso de nuestras funciones de bajo nivel.
 
 - :pen_fountain: Una actualización de bibliotecas realiza los siguientes cambios a distintas funciones. ¿Cómo se ven impactados los programas ya compilados?
 _Sugerencia:_ Describan la convención de llamada de cada una (en su versión antes y después del cambio).
+
 	- Una biblioteca de procesamiento cambia la estructura `pixel_t`:
 		* Antes era `struct { uint8_t r, g, b, a; }`
 		* Ahora es `struct { uint8_t a, r, g, b; }`
 			¿Cómo afecta esto a la función `void a_escala_de_grises(uint32_t ancho, uint32_t alto, pixel_t* data)`?
+
+		Antes del cambio, los parametros llegaban por:
+			- r [rdi]
+			- g [rsi]
+			- b [rdx]
+			- a [rcx]
+		Y luego del cambio por:
+			- a [rdi]
+			- r [rsi]
+			- g [rdx]
+			- b [rcx]
+
+		Luego el calculo de la luminosidad va a dar un numero distinto al esperado y el filtro va a estar mal.
+
 	- Se reordenan los parámetros (i.e. intercambian su posición) de la función `float sumar_floats(float* array, uint64_t tamano)`.
+
+		Antes del cambio, los parametros llegaban por: 
+			- *array [rdi]
+			- tamaño [rsi]
+		Luego del cambio llegan por:
+			- tamaño [rdi]
+			- *array [rsi]
+
+		Luego el programa va a intentar acceder a elementos en la posicion indicada por tamaño en vez de *array, fallando por segmentation fault o dando cualquier cosa.
+
 	- La función `uint16_t registrar_usuario(char* nombre, char* contraseña)` registra un usuario y devuelve su ID. Para soportar más usuarios se cambia el tipo de retorno por `uint64_t`.
+
+		En este caso lo que puede pasar es que cuando se llame 
+		´uint16_t user_id = registrar_usuario(...);´
+		
+		Cuando retorne un valor de 8bytes (uint64_t) en vez de 2bytes, se produzca una sobreescritura de otras partes de la memoria que cause fallas.
+
 	- La función `void cambiar_nombre(uint16_t user_id, char* nuevo_nombre)` también recibe la misma actualización. ¿Qué sucede ahora?
+
+		Acá el problema es que en user_id la funcion va a esperar 8bytes, pero al recibir 2, puede ser que los 6 restantes que tome sean basura. 
+
 	- Se reordenan los parámetros de `int32_t multiplicar(float a, int32_t b)`.
 
-	Respuesta: ??
+		Como `a` es flotante, se va a seguir pasando en XMM por la ABI, mientras que `b` es un entero entonces se pasa por RDI. Luego el programa va a seguir funcionando igual.
 	
 Una vez analizados los casos específicos describan la situación general:
 - :pen_fountain: ¿Qué sucede si una función externa utilizada por nuestro programa _(Es decir, que vive en una **biblioteca compartida**)_ cambia su interfaz (parámetros o tipo devuelto) luego de una actualización?
@@ -201,7 +235,6 @@ Además, para habilitar syntax highlighting, pueden opcionalmente instalar el pa
 pip install pygments
 ``` 
 
-# HACER!!!!!!!!!!!!!!!!
 ### Ejercicio
 En una máquina de uno de los labos de la facultad, nos encontramos un _pendrive_ con un programa ejecutable de linux adentro.
 Investigando un poco vimos que se trata de un programa de prueba interno de una importante compañía de software, que sirve para probar la validez de claves para su sistema operativo.
@@ -217,6 +250,7 @@ Se pide:
 
 1. Correr el programa con `gdb` y poner un breakpoint en la función que imprime el mensaje de autenticación exitosa/fallida.
 2. :pen_fountain: Imprimir una porción adecuada del stack, con un formato adecuado para ver si podemos encontrar la clave.
+
 0x7fffffffdef0: 0x00000063      0x00000000      0xb7e79e00      0x00000001
 0x7fffffffdf00: 0xffffdf30      0x00007fff      0x555552e5      0x00005555
 0x7fffffffdf10: 0xffffe3c8      0x00007fff      0x5555ff00      0x00005555
@@ -233,7 +267,9 @@ Se pide:
 
 >>> p *(char**) 0x7fffffffdf50
 $7 = 0x55555555ff00 "clave_10.10.13.157"
+
 3. :pen_fountain: ¿En que función se encuentra la clave? Explicar el mecanismo de como se llega a encontrar la función en la que se calcula la clave.
+
 - Para encontrar la clave usamos `info functions` en distintos puntos de ejecucion, y vimos la funcion `print_authentication_message`. En esta funcion inspeccionamos el stack y encontramos la clave en una de las posiciones.
 
 ### Ayuda de GDB:
