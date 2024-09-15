@@ -13,8 +13,8 @@ section .rodata
 	coef_blue: times 4 dd 0.0722
 	coef_alph: times 4 dd 0xFF_00_00_00
 
-mask_shuf db 0x03, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00
-mask_xor times 4 db 0xFF, 0x00, 0x00, 0x00
+mask_shuf: db 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03
+mask_xor: times 4 db 0xFF, 0x00, 0x00, 0x00
 
 section .text
 
@@ -121,14 +121,13 @@ ej1:
 		addps xmm5, xmm7
 
 		; xmm5 = lum0 | lum1 | ...
-		cvtps2dq xmm5, xmm5 ; cada lum ocupa 32 bits (4 bytes)
+		cvtps2dq xmm5, xmm5 ; cada lum ocupa 32 bits (4 bytes) (integer)
 		packusdw xmm5, xmm5 ; cada lum ocupa 16 bits (2 byte)
 		packuswb xmm5, xmm5 ; cada lum ocupa 8 bits (1 byte)
 
-		pshufb xmm5, xmm11
-		por xmm5, xmm3
-		; xmm5 = l3 l2 l1 l0 ... l3 l2 l1 l0 (1byte each)
-		
+		pshufb xmm5, xmm11  ; xmm5 = l3 l3 l3 l3 | l2 l2 l2 l2 | ... 
+							; la mascara está en xmm11 y tiene las posiciones de memoria
+		por xmm5, xmm3      ; xmm5 = FF l3 l3 l3 | FF l2 l2 l2 | ... 
 
 		movdqu [rdi], xmm5 ; escribo los 4 pixeles en dst
 		
