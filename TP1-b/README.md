@@ -136,7 +136,7 @@ _Sugerencia:_ Describan la convención de llamada de cada una (en su versión an
 
 	- La función `void cambiar_nombre(uint16_t user_id, char* nuevo_nombre)` también recibe la misma actualización. ¿Qué sucede ahora?
 
-		Acá el problema es que en user_id la funcion va a esperar 8bytes, pero al recibir 2, puede ser que los 6 restantes que tome sean basura. 
+		Acá el problema es que en user_id la funcion va a esperar 2 bytes y va a recibir, en el registro rdi, 8 bytes. Va a leer un entero mas largo de lo que deberia y puede fallar.
 
 	- Se reordenan los parámetros de `int32_t multiplicar(float a, int32_t b)`.
 
