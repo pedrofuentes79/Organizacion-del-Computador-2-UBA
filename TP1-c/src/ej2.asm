@@ -1,12 +1,17 @@
 section .rodata
 ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
 	mask_alph: times 4 dd 0xFF_00_00_00
-	mask_coef_blue:  times 4 dd 0x00_FF_00_00
-	mask_coef_green: times 4 dd 0x00_00_FF_00
-	mask_coef_red:   times 4 dd 0x00_00_00_FF
-
+	mask_green: times 4 dd 0x00_00_40_00
+	mask_blue: times 4 dd 0x00_80_00_00
+	
 	mask_pedro1: db 0x80, 0x80, 0x80, 0x0E, 0x80, 0x0D, 0x80, 0x0C, 0x80, 0x80, 0x80, 0x0A, 0x80, 0x09, 0x80, 0x08
 	mask_pedro2: db 0x80, 0x80, 0x80, 0x06, 0x80, 0x05, 0x80, 0x04, 0x80, 0x80, 0x80, 0x02, 0x80, 0x01, 0x80, 0x00
+
+	mask_shuf: db 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03
+	reciprocal_3:  dq 0x5555555555555555, 0x5555555555555555 
+	mask_192: times 16 db 192 
+	mask_384: times 16 db 384
+
 section .text
 
 ; Marca un ejercicio como aún no completado (esto hace que no corran sus tests)
@@ -86,10 +91,11 @@ ej2:
 	shr r9, 2 
 
 	; guardamos las máscaras usadas en registros xmm
-	movdqu xmm12, [mask_alph]
-	movdqu xmm8, [mask_coef_red]
-	movdqu xmm9, [mask_coef_green]
-	movdqu xmm10, [mask_coef_blue]
+	movdqu xmm9, [mask_green]
+	movdqu xmm8, [mask_blue]
+	movdqu xmm7, [mask_192]
+	movdqu xmm10, [mask_384]
+	movdqu xmm11, [mask_shuf]
 
 	.loop:
 		cmp r8, r9
@@ -100,26 +106,56 @@ ej2:
 
 		; copiamos el dato para operarlo
 		movdqu xmm5, xmm4
+		movdqu xmm6, xmm4
 
-		; saco el primer byte de cada pixel 
-		pandn xmm5, xmm12 	
+		pshufb xmm5, xmm11 ; xmm5 = 0 0 0 b0 | 0 g0 0 r0 | 0 0 0 b1 | 0 g1 0 r1
+		pshufb xmm6, xmm12 ; xmm6 = 0 0 0 b2 | 0 g2 0 r2 | 0 0 0 b3 | 0 g3 0 r3
 
+		; realizamos las sumas horizontales
+		phaddw xmm5, xmm5 ; xmm5 = b0+00 | g0+r0 | b1+00 | g1+r1
+		phaddw xmm6, xmm6 ; xmm6 = b2+00 | g2+r2 | b3+00 | g3+r3
+		phaddd xmm6, xmm5 ; xmm6 = b0+00+g0+r0  | b1+00+g1+r1 | b2+00+g2+r2 | b3+00+g3+r3
+		; 							t1 (8 bits) | t2 (8 bits)  | t3 (8 bits)  | t4 (8 bits)
 
+		; operacion de conversion ... ?? (saturamos) O sea las t1 
 
-		; asumo que tengo en xmm5 = 00_0b0_0g0_0r0 | 00_0b1_0g1_0r1
-		; asumo que tengo en xmm6 = 00_0b2_0g2_0r2 | 00_0b3_0g3_0r3
+		; x = x / 3 
+	    pmulld xmm6, [reciprocal_3] ; xmm6 = t1*(1/3) | t2*(1/3) | t3*(1/3) | t4*(1/3)
+		psrld xmm6, 30 				; Deajustar la escala Q2.30 a entero
 
-		phaddw xmm5, xmm5 ; xmm5 = 00
-		phaddw xmm6, xmm6 ; 
-		;
-		phaddd xmm6, xmm5
-		; xmm6 = t0 t1 t2 t3
+		; convertimos a t1 t1 t1 t1 | t2 t2 t2 t2 | t3 t3 t3 t3 | t4 t4 t4 t4
+		pshufb xmm6, xmm11
+
+		; x[green] += 64 (saturando) --> x = t1 t1 (t1+64) t1 | ... | ..
+		paddusb xmm6, xmm9
+
+		; x[azul] += 128
+		paddusb xmm6, xmm8
+
+		; aplicamos la funcion f(x) = min(255, max(0, 384 - 4 * |x - 192|))
+		; cada byte de cada pixel es un x distinto
 		
+		; Revisar si se puede operar a nivel byte o si es pasar a 32bits y despues convertir a t1 t1 t1 t1 | t2 t2 t2 t2 | ...
+		; xmm6 = |t1-192| | t1-192 | t1-192 | t1-192 | ...
+		psubb xmm6, xmm7 ; Restar xmm7 de xmm6
+		movdqa xmm0, xmm6 ; Copiar xmm6 a xmm0
+		psignb xmm0, xmm6 ; Obtener el signo de cada byte en xmm6 y aplicarlo a xmm0
+		pxor xmm6, xmm0   ; Invertir los bits de xmm6 si el byte es negativo
+		psubb xmm6, xmm0  ; Restar el valor original para obtener el valor absoluto
+		
+		; xmm6 *= 4
+		pslld xmm6, 2 		
+		
+		; suponemos que en xmm10 tenemos 384 en cada byte
+		xor xmm0, xmm0 		; xmm7 = 0
+		psubusb xmm10, xmm6 ; 384 - 4 * |x - 192|
+		pmaxub xmm10, xmm0  ; max(0, xmm10)
 
-
+		; pisamos el primer byte de cada pixel con alfa=0xFF
+		por xmm6, [mask_alpha] ;
 
 		; escribo los 4 pixeles en dst
-		movdqu [rdi], xmm5 
+		movdqu [rdi], xmm6 
 		
 		; avanzo 4 pixeles en los punteros a memoria (16 bytes)
 		add rsi, 16
