@@ -1,16 +1,19 @@
 section .rodata
 ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
 ; coeficientes escala de grises
-mask_green:  dd 0x00_FF_00_00, 0x00_FF_00_00, 0x00_FF_00_00, 0x00_FF_00_00
-mask_blue: dd 0x00_00_FF_00, 0x00_00_FF_00, 0x00_00_FF_00, 0x00_00_FF_00
-mask_alpha: dd 0x00_00_00_FF, 0x00_00_00_FF, 0x00_00_00_FF, 0x00_00_00_FF
-mask_red: dd 0xFF_00_00_00, 0xFF_00_00_00, 0xFF_00_00_00, 0xFF_00_00_00
+mask_blue:  times 4 dd 0x00_FF_00_00
+mask_green: times 4 dd 0x00_00_FF_00
+mask_red: times 4 dd 0x00_00_00_FF
 
+red times 4 dd 0.2126
+green times 4 dd 0.7152
+blue times 4 dd 0.0722
+alpha: times 4 dd 0x00_00_00_FF
+; asi es como veo la mascara. La escribo abajo 'al reves' porque asi se guarda en memoria. Fuck little endian.
+; mask_shuf db 0x0F, 0x0B, 0x07, 0x03, 0x0E, 0x0A, 0x06, 0x02, 0x0D, 0x09, 0x05, 0x01, 0x0C, 0x08, 0x04, 0x00
 
-red dq 0.2126, 0.2126, 0.2126, 0.2126
-green dq 0.7152, 0.7152, 0.7152, 0.7152
-blue dq 0.0722, 0.0722, 0.0722, 0.0722
-alpha dq 0xFF, 0xFF, 0xFF, 0xFF
+mask_shuf db 0x00, 0x04, 0x08, 0x0C, 0x01, 0x05, 0x09, 0x0D, 0x02, 0x06, 0x0A, 0x0E, 0x03, 0x07, 0x0B, 0x0F
+
 
 section .text
 
@@ -64,20 +67,24 @@ ej1:
 	push rbp
 	mov rbp, rsp
 
-	sub rsp, 48 ; guardo 16*3 bytes para 3 xmm
+	sub rsp, 16*4 ; guardo 16*4 bytes para 3 xmm
 	movaps [rbp-16], xmm8
 	movaps [rbp-32], xmm9
 	movaps [rbp-48], xmm10
+	movaps [rbp-64], xmm11
 
 
 	movdqu xmm0, [red]
 	movdqu xmm1, [green]
 	movdqu xmm2, [blue]
 	movdqu xmm3, [alpha]
+	
 
 	movdqu xmm8, [mask_red]
 	movdqu xmm9, [mask_green]
 	movdqu xmm10, [mask_blue]
+	movdqu xmm11, [mask_shuf]
+
 
 	xor r8, r8 ; contador de pixeles vistos
 
@@ -91,45 +98,47 @@ ej1:
 		je .fin
 
 		movdqu xmm4, [rsi] ; leo 4 pixeles de src
-		
+	
+
 		; parte roja
 		movdqa xmm5, xmm4
 		pand xmm5, xmm8
-		psrld xmm5, 24 ; desplazo 24 bits a la derecha ( asumo RGBA )
-		pmovzxbd xmm5, xmm5 ; ahora, cada valor de rojo es de 32 bits pues tiene 0s adelante. quedan en floats :)
-
-		; en la de arriba se podria haber usado pmovzxbd xmm5, xmm5 para convertir a 32 bits
-
+		; no shifteo pues ya esta en la posicion correcta. xmm5: |a0 b0 g0 r0|...
+		cvtdq2ps xmm5, xmm5 ; packed doubleword 2 packed single. osea, convierto de integer a float. es doubleword porque quedo 00_00_00_RR, 32 bits.
 		mulps xmm5, xmm0    ; multiplico por el coeficiente
-		cvtps2dq xmm5, xmm5 ; packed single 2 packed SIGNED doubleword integer
-		packuswb xmm5, xmm5 ; convierto a 8 bits
-
+		cvtps2dq xmm5, xmm5 ; packed single 2 packed SIGNED doubleword integer. osea, convierto de float a integer. TRUNCO?
 
 		; parte verde
 		movdqa xmm6, xmm4
 		pand xmm6, xmm9
-		psrld xmm6, 16 ; desplazo 16 bits a la derecha ( asumo RGBA )
-		pmovzxbd xmm6, xmm6
+		psrld xmm6, 8 ; desplazo 8 bits a la derecha 
+		cvtdq2ps xmm6, xmm6
 		mulps xmm6, xmm1
 		cvtps2dq xmm6, xmm6
-		packuswb xmm6, xmm6
 
-		; parte azul
+		; parte azul (se podria no usar xmm7 y pisar directo el xmm4...)
 		movdqa xmm7, xmm4
 		pand xmm7, xmm10
-		psrld xmm7, 8 ; desplazo 8 bits a la derecha ( asumo RGBA )
-		pmovzxbd xmm7, xmm7
+		psrld xmm7, 16 ; desplazo 24 bits a la derecha
+		cvtdq2ps xmm7, xmm7
 		mulps xmm7, xmm2
-		cvtps2dq xmm7, xmm7		; DUDA
-		packuswb xmm7, xmm7		; DUDA
+		cvtps2dq xmm7, xmm7
 
-		; vuelvo a armar el pixel
-		movdqa xmm4, xmm5
-		por xmm4, xmm6
-		por xmm4, xmm7
-		por xmm4, xmm3
+		; empaqueto para armar el pixel
 
-		movdqu [rdi], xmm4 ; guardo el pixel en dst
+		packusdw xmm5, xmm6
+		; xmm5 = g3 g2 g1 g0 r3 r2 r1 r0 (16 bits each)
+
+		packusdw xmm7, xmm3
+		; xmm7 = a3 a2 a1 a0 b3 b2 b1 b0 (16 bits each)
+
+		packuswb xmm5, xmm7
+		; xmm5 = a3 a2 a1 a0 b3 b2 b1 b0 g3 g2 g1 g0 r3 r2 r1 r0 (8 bits each)
+
+		; reordenar con shuf
+		pshufb xmm5, xmm11
+
+		movdqu [rdi], xmm5 ; guardo el pixel en dst
 		
 		; avanzo 4 pixeles en los punteros a memoria (16 bytes)
 		add rsi, 16
@@ -138,12 +147,12 @@ ej1:
 		; avanzo el contador de iteraciones
 		add r8, 1
 		jmp .loop
-
+ 
 	.fin:
 		movaps xmm8, [rbp-16]  ; Restaura xmm8
 		movaps xmm9, [rbp-32]  ; Restaura xmm9
 		movaps xmm10, [rbp-48] ; Restaura xmm10
-		add rsp, 48
+		add rsp, 64
 		pop rbp
 		ret
 
