@@ -61,8 +61,6 @@ ej1:
 	push rbp
 	mov rbp, rsp
 
-	;guardamos memoria para los registros volatiles
-
 	;guardamos en registros los coeficientes y las máscaras para operar mejor
 	movdqu xmm0, [coef_red]
 	movdqu xmm1, [coef_green]
