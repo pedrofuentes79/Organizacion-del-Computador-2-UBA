@@ -87,12 +87,11 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		divps xmm1, [mask_3]
 		cvttps2dq xmm1, xmm1 
 
-		;pasaje a 8 bits
+		;pasaje a 16 bits
 		packusdw xmm1, xmm1
-		;xmm1 = t1 | t1 | t1 | t1 | t2 | t2 | t2 | t2 | t3 | t3 | t3 | t3 | t4 | t4 | t4 | t4
 
-		;copia y pasaje a 2 registros (uno para t1 y t2, y otro para t3 y t4) 
-		;la idea es que cada registro tenga 2 pixeles y cada pixel los 4 colores con la temperatura
+		;replicamos 4 veces cada temperatura manteniendo los 16 bits
+		;como nos falta espacio, usamos dos registros
 		movdqa xmm4, xmm1
 		movdqa xmm5, xmm1
 		pshuflw xmm4, xmm4, 0b00000000  ; Shuffle low words: t1 | t1 | t1 | t1
@@ -104,11 +103,11 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		;xmm4 = t1 | t1 | t1 | t1 | t2 | t2 | t2 | t2 | t2
 		;xmm5 = t3 | t3 | t3 | t3 | t4 | t4 | t4 | t4 | t4
 
-		;sumamos en cada byte correspondiente segun color (+64, +128)
+		;sumamos en cada word el offset para el calculo (a:0, b:128, g:64, r:0)
 		paddw xmm4, [mask_offset]
 		paddw xmm5, [mask_offset]
 
-		;aplicamos la funcionb
+		;aplicamos la funcion
 		;x-192
 		psubw xmm4, [mask_192]
 		psubw xmm5, [mask_192]
@@ -130,7 +129,7 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		pmaxsw xmm5, [mask_zero]
 
 		;min(255, max(0, 384 - 4*(abs(x-192)))
-		;esto capaz es opcional
+		;esto capaz no hace falta
         pminsw xmm4, [mask_255]
         pminsw xmm5, [mask_255]
 
