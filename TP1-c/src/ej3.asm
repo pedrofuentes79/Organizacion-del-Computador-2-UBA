@@ -36,7 +36,7 @@ ej3a:
 	mov rbp, rsp
 
 	imul r9, r8
-	shr r9, 2    ; divido x 4
+	shr r9, 2 
 	xor r8, r8
 
 	movdqu xmm1, [mask_shuf]
