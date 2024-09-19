@@ -1,3 +1,4 @@
 test_c
 test_asm
 outputs/*.png
+*.o
