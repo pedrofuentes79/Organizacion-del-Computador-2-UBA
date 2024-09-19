@@ -25,7 +25,8 @@ section .rodata
 	mask_255: times 8 dw 255
 
 	align 16
-	mask_offset: times 2 dw 0, 128, 64, 0
+	;						r  g   b  a 
+	mask_offset: times 2 dw 0, 64, 128, 0
 
 	align 16
 	mask_abs dd 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF 
