@@ -1,9 +1,13 @@
 
 section .rodata
+
 	mask_blue:  times 4 dd 0x00_FF_00_00
 	mask_green: times 4 dd 0x00_00_FF_00
 	mask_red:   times 4 dd 0x00_00_00_FF
 	mask_alpha: times 4 dd 0xFF_00_00_00
+
+	align 16
+	mask_zero: times 8 dw 0
 
 	align 16
 	mask_3: times 4 dd 3.0
@@ -18,13 +22,13 @@ section .rodata
 	mask_384: times 8 dw 384
 
 	align 16
+	mask_255: times 8 dw 255
+
+	align 16
 	mask_offset: times 2 dw 0, 128, 64, 0
 
 	align 16
-	abs_mask dd 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF 
-
-	align 16
-	mask_sign: times 2 dq 0x8000800080008000
+	mask_abs dd 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF 
 
 section .text
 
@@ -57,10 +61,8 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 
 	;masks/coefs
 	movdqu xmm12, [mask_alpha]	
-	movaps xmm13, [abs_mask]
-	movdqu xmm10, [mask_4]
-	movdqu xmm11, [mask_3]
-	movdqu xmm14, [mask_192]
+	movaps xmm13, [mask_abs]
+	movdqu xmm14, [mask_384]
 
 	.loop:
 		;fin loop
@@ -82,7 +84,7 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		paddd xmm1, xmm2
 		paddd xmm1, xmm3
 		cvtdq2ps xmm1, xmm1
-		divps xmm1, xmm11
+		divps xmm1, [mask_3]
 		cvttps2dq xmm1, xmm1 
 
 		;pasaje a 8 bits
@@ -103,10 +105,10 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		;xmm5 = t3 | t3 | t3 | t3 | t4 | t4 | t4 | t4 | t4
 
 		;sumamos en cada byte correspondiente segun color (+64, +128)
-		addps xmm4, [mask_offset]
-		addps xmm5, [mask_offset]
+		paddw xmm4, [mask_offset]
+		paddw xmm5, [mask_offset]
 
-		;aplicamos la funcion
+		;aplicamos la funcionb
 		;x-192
 		psubw xmm4, [mask_192]
 		psubw xmm5, [mask_192]
@@ -116,15 +118,21 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		;4*(abs(x-192))
 		psllw xmm4, 2
 		psllw xmm5, 2
-		;-4*(abs(x-192))
-		pxor xmm4, [mask_sign]
-		pxor xmm5, [mask_sign]
 		;384 - 4*(abs(x-192))
-		addps xmm4, [mask_384]
-		addps xmm5, [mask_384]
+		movdqu xmm15, xmm14 ; xmm15 = 384
+		movdqu xmm11, xmm14 ; xmm15 = 384
+		psubw xmm15, xmm4   ; xmm15 = 384 - 4*(abs(x-192))
+		psubw xmm11, xmm5	; xmm14 = 384 - 4*(abs(x-192))
+		movdqu xmm4, xmm15
+		movdqu xmm5, xmm11
 		;max(0, 384 - 4*(abs(x-192)))
-		pmaxsw xmm4, xmm10
-		pmaxsw xmm5, xmm10
+		pmaxsw xmm4, [mask_zero]
+		pmaxsw xmm5, [mask_zero]
+
+		;min(255, max(0, 384 - 4*(abs(x-192)))
+		;esto capaz es opcional
+        pminsw xmm4, [mask_255]
+        pminsw xmm5, [mask_255]
 
 		;saturamos y convertimos a 8 bits
 		packuswb xmm4, xmm5 
@@ -133,7 +141,7 @@ ej2: ; dst [rdi], src [rsi], width [rdx], height [rcx]
 		;cada t_i es un byte (8bits)
 
 		;pegamos el alpha=255
-		por xmm4, xmm12
+		por xmm4, [mask_alpha]
 
 		;cargamos pixeles en dst
 		movdqu [rdi], xmm4
