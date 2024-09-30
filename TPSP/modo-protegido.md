@@ -46,13 +46,24 @@ Las preguntas a continuación las pueden responder inline o en otro archivo mark
 
 1. Explorando el manual Intel *Volumen 3: System Programming. Sección 2.2 Modes of Operation*. ¿A qué nos referimos con modo real y con modo protegido en un procesador Intel? ¿Qué particularidades tiene cada modo?
 
+    El modo real y el modo protegido de un procesador Intel son modos operativos que soporta el CPU. El modo protegido es el nativo del procesador; en este se encuentran presentes un conjunto de características arquitectónicas, flexibilidad, alto rendimiento y compatibilidad con el software existente. El modo real es el que proporciona el entorno de programación del procesador Intel 8086, junto con la capacidad de cambiar al modo protegido y otros.
+
 2. Comenten en su equipo, ¿Por qué debemos hacer el pasaje de modo real a modo protegido? ¿No podríamos simplemente tener un sistema operativo en modo real? ¿Qué desventajas tendría?
+
+    El modo real no podría ser usado como un sistema operativo ya que posee ciertas características que hacen que su funcionamiento no sea compatible con su uso. Por ejemplo, solo se puede direccionar hasta 1 MB de memoria, sus modos de direccionamiento son más limitados que en modo protegido y no hay una protección de memoria ni niveles de privilegio.
 
 Anteriormente, detallamos que la memoria es un arreglo continuo de bytes y que podemos segmentarla de acuerdo a tamaño, nivel de protección y uso. Debemos indicar al procesador la descripción de los segmentos, es decir, cómo están conformados los segmentos. Los ejercicios a continuación tienen que ver con el armado de la tabla de segmentos.
 
 3. Busquen el manual *volumen 3 de Intel en la sección 3.4.5 Segment Descriptors*. ¿Qué es la GDT? ¿Cómo es el formato de un descriptor de segmento, bit a bit? Expliquen brevemente para qué sirven los campos *Limit*, *Base*, *G*, *P*, *DPL*, *S*. También pueden referirse a los slides de la clase teórica, aunque recomendamos que se acostumbren a consultar el manual.
+
+    La GDT, en español la Tabla Global de Descriptores, es la que alberga una estructura de datos que proporciona al procesador el tamaño y la ubicación de un segmento, junto con información de control de acceso y estado.
+Del bit 0 al 7 y del 21 al 34 está la Base del segmento. Del 8 al 11 el tipo del segmento, el 12 es el tipo del descriptor (especifica si es para un segmento de sistema o un segmento de código o datos), el 13 y 14 son para el Nivel de privilegio del descriptor (puede variar de 0 a 3 siendo 0 el nivel más privilegiado, controlando el acceso al segmento), el 15 para el segmento presente (indica si está presente en la memoria o no), del 16 al 19 el Segment Limit, el 20 para el Available for use by system software, el 21 para 64-bit code segment (indica si un segmento de código contiene código nativo de 64 bits), el 22 para Default operation size (su función varía en base según si el descriptor de segmento es un segmento de código ejecutable, un segmento de datos de expansión descendente o un segmento de pila), y el 23 para Granularity (determina la escala del campo de límite de segmento).
+El segmento límite es el que especifica el tamaño del segmento. La CPU combina los dos campos de límite del segmento de tal manera que si el indicador de granularidad está desactivado, el tamaño oscila entre 1 byte a 1 MB, si no entre 4 KB y 4 GB. Los dos campos de dirección base ubican la posición del byte 0 del segmento dentro del espacio de direcciones lineales de 4 GB, y se combinan los tres campos para formar un valor de 32 bits. El campo de tipo del segmento indica el tipo de segmento o puerta y especifica los tipos de acceso que se pueden hacer al segmento y la dirección de crecimiento. Su contenido depende de si el indicador de tipo de descriptor especifica un descriptor de aplicación (código o datos) o un descriptor de sistema.
     
 4. La tabla de la sección 3.4.5.1 *Code- and Data-Segment Descriptor Types* del volumen 3 del manual del Intel nos permite completar el *Type*, los bits 11, 10, 9, 8. ¿Qué combinación de bits tendríamos que usar si queremos especificar un segmento para ejecución y lectura de código?
+
+    La respuesta varía en conforming, ccessed, ambas o ninguna. Si es ninguna, entonces será 1010; si es con accessed, 1011; si es con conforming, 1110; y si es con ambas, 1111.
+    El bit 11 y el 9 (de read activado) siempre deben estar activados mientras que el 10 y el 8 dependen de si el bit es accessed o conforming.
 
 ![](img/resolucion-dir-logica.png)
 
