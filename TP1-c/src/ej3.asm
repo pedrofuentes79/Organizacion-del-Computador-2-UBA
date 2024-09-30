@@ -1,9 +1,7 @@
 section .rodata
 ; Poner acá todas las máscaras y coeficientes que necesiten para el filtro
-	mask_alph: times 4 dd 0xFF_00_00_00
-	mask_green: times 4 dd 0x00_00_40_00
-	mask_blue: times 4 dd 0x00_80_00_00
-	
+mask_shuf: db 0x00, 0x80, 0x80, 0x80, 0x01, 0x80, 0x80, 0x80, 0x02, 0x80, 0x80, 0x80, 0x03, 0x80, 0x80, 0x80
+
 section .text
 
 ; Marca un ejercicio como aún no completado (esto hace que no corran sus tests)
@@ -16,76 +14,68 @@ TRUE  EQU 1
 ; Funciones a implementar:
 ;   - ej3a
 global EJERCICIO_3A_HECHO
-EJERCICIO_3A_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_3A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Dada una imagen origen escribe en el destino `scale * px + offset` por cada
 ; píxel en la imagen.
 ;
 ; Parámetros:
-;   - dst_depth: La imagen destino (mapa de profundidad). Está en escala de
+;   - dst_depth[rdi]: La imagen destino (mapa de profundidad). Está en escala de
 ;                grises a 32 bits con signo por canal.
-;   - src_depth: La imagen origen (mapa de profundidad). Está en escala de
+;   - src_depth[rsi]: La imagen origen (mapa de profundidad). Está en escala de
 ;                grises a 8 bits sin signo por canal.
-;   - scale:     El factor de escala. Es un entero con signo de 32 bits.
+;   - scale[edx]:     El factor de escala. Es un entero con signo de 32 bits.
 ;                Multiplica a cada pixel de la entrada.
-;   - offset:    El factor de corrimiento. Es un entero con signo de 32 bits.
+;   - offset[ecx]:    El factor de corrimiento. Es un entero con signo de 32 bits.
 ;                Se suma a todos los píxeles luego de escalarlos.
-;   - width:     El ancho en píxeles de `src_depth` y `dst_depth`.
-;   - height:    El alto en píxeles de `src_depth` y `dst_depth`.
+;   - width[r8]:     El ancho en píxeles de `src_depth` y `dst_depth`.
+;   - height[r9]:    El alto en píxeles de `src_depth` y `dst_depth`.
 global ej3a
 ej3a:
 	push rbp
 	mov rbp, rsp
 
-	; contador de iteraciones necesarias [r9] = totalPixeles / pixelPorIteracion = width * height / 4
-	; 16 bytes por iteracion y 4 bytes por pixel --> 4 pixeles por iteracion 
-	xor r8, r8 
-	mov r9, rdx 
-	imul r9, rcx
-	shr r9, 2
+	imul r9, r8
+	shr r9, 2 
+	xor r8, r8
 
-	; guardo los valores de scale y offset en registros
-	movd xmm4, esi
-	movd xmm5, edi
-	punpckldq xmm4, xmm4
-	punpckldq xmm5, xmm5
+	movdqu xmm1, [mask_shuf]
+
+	; scale
+	movd xmm2, edx
+	pshufd xmm2, xmm2, 0x00_00_00_00
+
+	; xmm2 = [scale | scale | scale | scale]
+
+	; offset
+	movd xmm3, ecx
+	pshufd xmm3, xmm3, 0x00_00_00_00
+	; xmm2 = [offset | offset | offset | offset]
 
 	; iteracion
 	.loop:
 		cmp r8, r9
 		je .fin
 
-		movdqu xmm0, [rsi] ; cargo 4 pixeles de src_depth
-		; xmm0 = [p1, p2, p3, p4]
+		mov r10d, [rsi] ; cargo 4 pixeles de src_depth
+		movd xmm0, r10d
 
-		; desempaqueto los pixeles
-		movdqa xmm6, xmm0
-		punpcklbw xmm6, xmm6
-		; xmm6 = [a1,a1,g1,g1,b1,b1,r1,r1,a2,a2,g2,g2,b2,b2,r2,r2]
+		;         0F 0E 0D 0C
+		; xmm0 = [ basura | basura | basura | p0 p1 p2 p3 ]
+		
+		pshufb xmm0, xmm1
 
-		movdqa xmm7, xmm0
-		punpckhbw xmm7, xmm7
-		; xmm7 = [a3,a3,g3,g3,b3,b3,r3,r3,a4,a4,g4,g4,b4,b4,r4,r4]
+		; xmm0 = [0 0 0 p0 | 0 0 0 p1 | 0 0 0 p2 | 0 0 0 p3]
 
 		; multiplico por scale
-		pmullw xmm6, xmm4
-		pmullw xmm7, xmm4
+		pmulld xmm0, xmm2
 
 		; sumo offset
-		paddw xmm6, xmm5
-		paddw xmm7, xmm5
-
-		; saturacion
-		packuswb xmm6, xmm6
-		packuswb xmm7, xmm7
-
-		; empaqueto los pixeles
-		movdqa xmm0, xmm6
-		packuswb xmm0, xmm7
-
+		paddd xmm0, xmm3
+		
 		movdqu [rdi], xmm0 ; guardo los 4 pixeles en dst_depth
 
-		add rsi, 16
+		add rsi, 4
 		add rdi, 16
 		add r8, 1
 		jmp .loop
@@ -99,7 +89,7 @@ ej3a:
 ; Funciones a implementar:
 ;   - ej3b
 global EJERCICIO_3B_HECHO
-EJERCICIO_3B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_3B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Dadas dos imágenes de origen (`a` y `b`) en conjunto con sus mapas de
 ; profundidad escribe en el destino el pixel de menor profundidad por cada
@@ -124,94 +114,56 @@ ej3b:
 	; ubicación según la convención de llamada. Prestá atención a qué
 	; valores son de 64 bits y qué valores son de 32 bits.
 	;
-	; r/m64 = rgba_t*  dst
-	; r/m64 = rgba_t*  a
-	; r/m64 = int32_t* depth_a
-	; r/m64 = rgba_t*  b
-	; r/m64 = int32_t* depth_b
-	; r/m32 = int      width
-	; r/m32 = int      height
+	; r/m64 = rgba_t*  dst[rdi]
+	; r/m64 = rgba_t*  a[rsi]
+	; r/m64 = int32_t* depth_a[rdx]
+	; r/m64 = rgba_t*  b[rcx]
+	; r/m64 = int32_t* depth_b[r8]
+	; r/m32 = int      width[r9d]
+	; r/m32 = int      height[r10d por pila]
 
 	push rbp
 	mov rbp, rsp
 
+	mov r10d, [rbp+16]
+
+
 	; contador de iteraciones necesarias [r9] = totalPixeles / pixelPorIteracion = width * height / 4
 	; 16 bytes por iteracion y 4 bytes por pixel --> 4 pixeles por iteracion 
-	xor r8, r8 
-	mov r9, rdx 
-	imul r9, rcx
-	shr r9, 2
+	imul r9d, r10d
+	shr r9d, 2
+	xor r10, r10
 
-
-	; guardo los valores de scale y offset en registros
-	movd xmm4, esi
-	movd xmm5, edi
-	punpckldq xmm4, xmm4
-	punpckldq xmm5, xmm5
 
 	; iteracion
 	.loop:
-		cmp r8, r9
+		cmp r10, r9
 		je .fin
 
 		movdqu xmm0, [rsi] ; cargo 4 pixeles de la imagen a
 		; xmm0 = [p1, p2, p3, p4]
-		movdqu xmm1, [rdx] ; cargo 4 pixeles de depth_a (su mapa)
+		movdqu xmm1, [rdx] ; cargo 4 valores de depth_a (su mapa)
 
-		movdqu xmm2, [r8] ; cargo 4 pixeles de la imagen b
+		movdqu xmm2, [rcx] ; cargo 4 pixeles de la imagen b
 		; xmm2 = [p1', p2', p3', p4']
-		movdqu xmm3, [r9] ; cargo 4 pixeles de depth_b (su mapa)
+		movdqu xmm3, [r8] ; cargo 4 valores de depth_b (su mapa)
 
 		;puedo comparar directamente los pixeles porque tienen la misma cantidad de bits
+
 		pcmpgtd xmm3, xmm1  ;si son iguales me hay 0 y me quedo con la de b 
-		pand xmm0, xmm3
-		pandn xmm2, xmm3
-		por xmm0, xmm2 ;en xmm8 tengo los pixeles que me quedo
-		; ej xmm0= [p1, p2', p3, p4]
+		pand xmm0, xmm3		; dejo pasar en xmm0 solo los pixeles de a que van
+		pandn xmm3, xmm2	; dejo pasar los pixeles de b que si van
+		por xmm0, xmm3      
 
 		movdqu [rdi], xmm0 ; guardo los 4 pixeles en dst
 		add rsi, 16
+		add rcx, 16
+		add rdx, 16
+		add r8, 16
 		add rdi, 16
-
-		add r8,1 
+		add r10, 1
 		jmp .loop
 
-	    ; hago esto comentado porque me parecee que no es necesario pero lo dejo por si es que si asi no lo tienen que hacer de vuelta
-		/* ;desempaqueto los pixeles para poder comparar p1 con p1' y p2 con p2' y asi
-		movdqa xmm6, xmm0
-		punpcklbw xmm6, xmm6
-		; xmm6 = [a1,a1,g1,g1,b1,b1,r1,r1,a2,a2,g2,g2,b2,b2,r2,r2] de a
-
-		movdqa xmm7, xmm2
-		punpcklbw xmm7, xmm7
-		; xmm7 = [a1,a1,g1,g1,b1,b1,r1,r1,a2,a2,g2,g2,b2,b2,r2,r2] de b
-
-		; comparo las profundidades y me quedo con la menor (en caso de empate me quedo con la de b)
-		pcmpgtd xmm3, xmm1  ;si son iguales me hay 0 y me quedo con la de b 
-		pand xmm8, xmm6
-		pandn xmm3, xmm7
-		por xmm8, xmm3 ;en xmm8 tengo los pixeles que me quedo
-		; ej xmm8= [a1',a1',g1',g1',b1',b1',r1',r1',a2,a2,g2,g2,b2,b2,r2,r2] de a
-
-		;todavia me queda comparar p3 con p3' y p4 con p4'
-		movdqa xmm6, xmm0
-		punpckhbw xmm6, xmm6
-		; xmm6 = [a3,a3,g3,g3,b3,b3,r3,r3,a4,a4,g4,g4,b4,b4,r4,r4] de a
-
-		movdqa xmm7, xmm2
-		punpckhbw xmm7, xmm7
-		; xmm7 = [a3,a3,g3,g3,b3,b3,r3,r3,a4,a4,g4,g4,b4,b4,r4,r4] de b
-
-		; comparo las profundidades y me quedo con la menor (en caso de empate me quedo con la de b)
-		pcmpgtd xmm3, xmm1  ;si son iguales me hay 0 y me quedo con la de b
-		pand xmm9, xmm6
-		pandn xmm3, xmm7
-		por xmm9, xmm3 ;en xmm9 tengo los pixeles que me quedo
-
-		;empaqueto los pixeles
-		movdqa xmm0, xmm8
-		packuswb xmm0, xmm9 */
-
-	.fin:
-	pop rbp
-	ret
+		.fin:
+			pop rbp
+			ret
