@@ -62,7 +62,7 @@ El segmento límite es el que especifica el tamaño del segmento. La CPU combina
     
 4. La tabla de la sección 3.4.5.1 *Code- and Data-Segment Descriptor Types* del volumen 3 del manual del Intel nos permite completar el *Type*, los bits 11, 10, 9, 8. ¿Qué combinación de bits tendríamos que usar si queremos especificar un segmento para ejecución y lectura de código?
 
-    La respuesta varía en conforming, ccessed, ambas o ninguna. Si es ninguna, entonces será 1010; si es con accessed, 1011; si es con conforming, 1110; y si es con ambas, 1111.
+    La respuesta varía en conforming, accessed, ambas o ninguna. Si es ninguna, entonces será 1010; si es con accessed, 1011; si es con conforming, 1110; y si es con ambas, 1111.
     El bit 11 y el 9 (de read activado) siempre deben estar activados mientras que el 10 y el 8 dependen de si el bit es accessed o conforming.
 
 ![](img/resolucion-dir-logica.png)
@@ -89,8 +89,15 @@ Ahora, trabajemos con el código provisto por la cátedra. Vamos a completar la 
 
 6. En el archivo `gdt.h` observen las estructuras: `struct gdt_descriptor_t` y el `struct gdt_entry_t`. ¿Qué creen que contiene la variable `extern gdt_entry_t gdt;` y `extern gdt_descriptor_t GDT_DESC;`?
 
+    - `gdt_descriptor_t` es una direccion logica que nos va a llevar a una entrada de la gdt.
+    - `gdf_entry_t` es un struct que representa un descriptor en la GDT.
+
+
 7. Buscar en el Volumen 3 del manual de Intel, sección 3.4.2 *Segment Selectors* el formato de los selectores de segmento. Observar en el archivo `defines.h` las constantes con los valores de distintos selectores de segmento posibles. Completen los defines faltantes en `defines.h` y entiendan la utilidad de las macros allí definidas. 
    **USAR LAS MACROS** para definir los campos de los entries de la gdt. En lo posible, no hardcodeen los números directamente en los campos.
+    
+
+
 
 8. En el archivo `gdt.c`, completen en el código la Tabla de Descriptores Globales (GDT) con los 4 segmentos definidos en el punto 5. (**usen, en la medida de lo posible, los defines del punto anterior**)
 

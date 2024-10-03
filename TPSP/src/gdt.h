@@ -14,9 +14,11 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 
 // Define el descriptor de la GDT
 // Es una estructura de 48 bits con dos elementos
+
+// una direccion logica !
 typedef struct str_gdt_descriptor {
-  uint16_t gdt_length;
-  uint32_t gdt_addr;
+  uint16_t gdt_length;  // indice
+  uint32_t gdt_addr;  // offset
 } __attribute__((__packed__)) gdt_descriptor_t;
 
 // Entrada de la GDT. Es una estructura

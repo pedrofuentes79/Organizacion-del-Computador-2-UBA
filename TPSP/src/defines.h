@@ -10,17 +10,26 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 #define __DEFINES_H__
 
 /* Misc */
-/* -------------------------------------------------------------------------- */
-// Y Filas
-#define SIZE_N 40
-#define ROWS   SIZE_N
-
-// X Columnas
-#define SIZE_M 80
-#define COLS   SIZE_M
-
-/* Indices en la gdt */
-/* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- 
+// Y Filas[GDT_IDX_CODE_3] =
+        {
+            // El descriptor nulo es el primero que debemos definir siempre
+            // Cada campo del struct se matchea con el formato que figura en el manual de intel
+            // Es una entrada en la GDT.
+            .limit_15_0 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) & (0x0000FFFF),
+            .base_15_0 = 0x0000,
+            .base_23_16 = 0x00,
+            .type = DESC_TYPE_EXECUTE_READ,
+            .s = DESC_CODE_DATA,
+            .dpl = 0x03,
+            .p = 0x01,
+            .limit_19_16 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) >> 16,
+            .avl = 0x0,
+            .l = 0x0,
+            .db = 0x0,
+            .g = 0x01,
+            .base_31_24 = 0x00,
+        },------------- */
 #define GDT_COUNT         35
 
 #define GDT_IDX_NULL_DESC 0
@@ -40,10 +49,10 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
  * Definirlos a partir de los índices de la GDT, definidos más arriba 
  * Hint: usar operadores "<<" y "|" (shift y or) */
 
-//#define GDT_CODE_0_SEL ??
-//#define GDT_DATA_0_SEL ??
-//#define GDT_CODE_3_SEL ??
-//#define GDT_DATA_3_SEL ??
+#define GDT_CODE_0_SEL (GDT_IDX_CODE_0 << 3) | 0x00
+#define GDT_CODE_3_SEL (GDT_IDX_CODE_3 << 3) | 0x03
+#define GDT_DATA_0_SEL (GDT_IDX_DATA_0 << 3) | 0x00
+#define GDT_DATA_3_SEL (GDT_IDX_DATA_3 << 3) | 0x03
 
 
 // Macros para trabajar con segmentos de la GDT.
@@ -61,14 +70,14 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 #define GDT_BASE_HIGH(base) (uint8_t)((((uint32_t)(base)) >> 24) & 0xFF)
 
 /* COMPLETAR - Valores de atributos */ 
-//#define DESC_CODE_DATA ??
-//#define DESC_SYSTEM    ??
-//#define DESC_TYPE_EXECUTE_READ ??
-//#define DESC_TYPE_READ_WRITE   ??
+#define DESC_CODE_DATA 0x01
+#define DESC_SYSTEM    0x00
+#define DESC_TYPE_EXECUTE_READ 0x0A
+#define DESC_TYPE_READ_WRITE   0x02
 
 /* COMPLETAR - Tamaños de segmentos */ 
-//#define FLAT_SEGM_SIZE   ??
-//#define VIDEO_SEGM_SIZE  ??
+#define FLAT_SEGM_SIZE 0x33100  // dudosoooo...
+#define VIDEO_SEGM_SIZE 0xFFFFF // depende del tamano del buffer??
 
 
 /* Direcciones de memoria */
