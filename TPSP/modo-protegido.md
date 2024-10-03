@@ -56,7 +56,7 @@ Anteriormente, detallamos que la memoria es un arreglo continuo de bytes y que p
 
 3. Busquen el manual *volumen 3 de Intel en la sección 3.4.5 Segment Descriptors*. ¿Qué es la GDT? ¿Cómo es el formato de un descriptor de segmento, bit a bit? Expliquen brevemente para qué sirven los campos *Limit*, *Base*, *G*, *P*, *DPL*, *S*. También pueden referirse a los slides de la clase teórica, aunque recomendamos que se acostumbren a consultar el manual.
 
-    La GDT, en español la Tabla Global de Descriptores, es la que alberga una estructura de datos que proporciona al procesador el tamaño y la ubicación de un segmento, junto con información de control de acceso y estado.
+    La GDT, es la que tiene la estructura de datos que proporciona al procesador el tamaño y la ubicación de un segmento, junto con información de control de acceso y estado.
 Del bit 0 al 7 y del 21 al 34 está la Base del segmento. Del 8 al 11 el tipo del segmento, el 12 es el tipo del descriptor (especifica si es para un segmento de sistema o un segmento de código o datos), el 13 y 14 son para el Nivel de privilegio del descriptor (puede variar de 0 a 3 siendo 0 el nivel más privilegiado, controlando el acceso al segmento), el 15 para el segmento presente (indica si está presente en la memoria o no), del 16 al 19 el Segment Limit, el 20 para el Available for use by system software, el 21 para 64-bit code segment (indica si un segmento de código contiene código nativo de 64 bits), el 22 para Default operation size (su función varía en base según si el descriptor de segmento es un segmento de código ejecutable, un segmento de datos de expansión descendente o un segmento de pila), y el 23 para Granularity (determina la escala del campo de límite de segmento).
 El segmento límite es el que especifica el tamaño del segmento. La CPU combina los dos campos de límite del segmento de tal manera que si el indicador de granularidad está desactivado, el tamaño oscila entre 1 byte a 1 MB, si no entre 4 KB y 4 GB. Los dos campos de dirección base ubican la posición del byte 0 del segmento dentro del espacio de direcciones lineales de 4 GB, y se combinan los tres campos para formar un valor de 32 bits. El campo de tipo del segmento indica el tipo de segmento o puerta y especifica los tipos de acceso que se pueden hacer al segmento y la dirección de crecimiento. Su contenido depende de si el indicador de tipo de descriptor especifica un descriptor de aplicación (código o datos) o un descriptor de sistema.
     
@@ -95,7 +95,7 @@ Ahora, trabajemos con el código provisto por la cátedra. Vamos a completar la 
 
 7. Buscar en el Volumen 3 del manual de Intel, sección 3.4.2 *Segment Selectors* el formato de los selectores de segmento. Observar en el archivo `defines.h` las constantes con los valores de distintos selectores de segmento posibles. Completen los defines faltantes en `defines.h` y entiendan la utilidad de las macros allí definidas. 
    **USAR LAS MACROS** para definir los campos de los entries de la gdt. En lo posible, no hardcodeen los números directamente en los campos.
-    
+
 
 
 
