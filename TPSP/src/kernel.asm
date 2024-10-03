@@ -5,14 +5,16 @@
 
 %include "print.mac"
 
+%define C_FG_LIGHT_CYAN    (0xB)
+
 global start
 
-
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
+extern GDT_DESC
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
-;%define CS_RING_0_SEL ??   
-;%define DS_RING_0_SEL ??   
+%define CS_RING_0_SEL 8 // el offset respecto de la gdt
+%define DS_RING_0_SEL 24    
 
 
 BITS 16
@@ -36,7 +38,7 @@ start_pm_len equ    $ - start_pm_msg
 BITS 16
 start:
     ; COMPLETAR - Deshabilitar interrupciones
-
+    cli
 
     ; Cambiar modo de video a 80 X 50
     mov ax, 0003h
@@ -49,16 +51,27 @@ start:
     ; (revisar las funciones definidas en print.mac y los mensajes se encuentran en la
     ; sección de datos)
 
+
+    print_text_rm start_rm_msg, start_rm_len, C_FG_LIGHT_CYAN, 0x00, 0x00
+
+
     ; COMPLETAR - Habilitar A20
     ; (revisar las funciones definidas en a20.asm)
+    call A20_enable
 
     ; COMPLETAR - Cargar la GDT
+    lgdt [GDT_DESC]
 
     ; COMPLETAR - Setear el bit PE del registro CR0
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
 
     ; COMPLETAR - Saltar a modo protegido (far jump)
     ; (recuerden que un far jmp se especifica como jmp CS_selector:address)
     ; Pueden usar la constante CS_RING_0_SEL definida en este archivo
+    jmp CS_RING_0_SEL:modo_protegido
+
 
 BITS 32
 modo_protegido:
