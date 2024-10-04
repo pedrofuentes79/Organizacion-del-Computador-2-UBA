@@ -13,9 +13,8 @@ global start
 extern GDT_DESC
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
-%define CS_RING_0_SEL 8 // el offset respecto de la gdt
-%define DS_RING_0_SEL 24    
-
+%define CS_RING_0_SEL 8
+%define DS_RING_0_SEL 24
 
 BITS 16
 ;; Saltear seccion de datos
