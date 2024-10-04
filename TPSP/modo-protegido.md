@@ -108,6 +108,8 @@ Ahora, trabajemos con el código provisto por la cátedra. Vamos a completar la 
     *Hint*: investiguen para qué puede servir la instrucción **cli** en el manual 2.
 
 10. Busquen qué hace la instrucción LGDT en el Volumen 2 del manual de Intel. Expliquen con sus palabras para qué sirve esta instrucción. En el código, ¿qué estructura indica donde está almacenada la dirección desde la cual se carga la GDT y su tamaño? ¿dónde se inicializa en el código?
+    - Lo que hace la instruccion LGDT es cargar en el registro GDTR la direccion de la GDT y su tamaño, para que despues se pueda acceder directamente usando ese registro.
+    - Vemos que en `gdt.h` se define la estructura `gdt_descriptor_t`, que tiene donde esta la gdt y su tamaño. En `gdt.c` se inicializa la gdt, con su tamaño y con las entradas de los segmentos que definimos antes.
 
 11. Completen el archivo `kernel.asm` en la sección de cargar la GDT usando lo averiguado en el punto 8 para cargar la GDT.
 
@@ -134,6 +136,7 @@ Recomendamos que también miren como referencia, el manual *volumen 3, sección 
 Ya hemos hecho los primeros, deshabilitar interrupciones y completar la GDT. También ya cargamos el registro GDTR correctamente. Ahora deberíamos, habilitar el modo protegido, hacer el *jmp far* y cargar los registros selectores de segmento.
 
 13. Investiguen en el manual de Intel *sección 2.5 Control Registers*, el registro CR0. ¿Deberíamos modificarlo para pasar a modo protegido? Si queremos modificar CR0, no podemos hacerlo directamente. Sólo mediante un MOV desde/hacia los registros de control (pueden leerlo en el manual en la sección citada).
+    - Para pasar a modo protegido, tenemos que setear el bit 0 (PE) de `cr0` en 1. Para hacerlo usamos un `mov` con un registro auxiliar y un `or`.
 
 14. A continuación, completen la sección del `kernel.asm` escribiendo un código que modifique CR0 para pasar a modo protegido. Tengan en cuenta las averiguaciones y comentarios del punto 13.
 

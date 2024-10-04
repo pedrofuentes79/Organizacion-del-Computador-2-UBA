@@ -34,7 +34,7 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x00,
             .base_31_24 = 0x00,
         },
-
+    /* Offset = 0x08 */
     [GDT_IDX_CODE_0] =
         {
             // El descriptor nulo es el primero que debemos definir siempre

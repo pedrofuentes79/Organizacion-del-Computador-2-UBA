@@ -4,8 +4,9 @@
 ; ==============================================================================
 
 %include "print.mac"
+%include "a20.asm"
 
-%define C_FG_LIGHT_CYAN    (0xB)
+%define C_FG_LIGHT_CYAN (0xB)
 
 global start
 
@@ -65,22 +66,32 @@ start:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
+    ; para habilitar paginacion hay que setear el bit 31 (PG) de CR0 en 1
+    ; osea hacer un or eax, 0x80000000
+    ; no ejecutar ninguna otra instruccion entre modificar cr0 y el far jmp
 
     ; COMPLETAR - Saltar a modo protegido (far jump)
-    ; (recuerden que un far jmp se especifica como jmp CS_selector:address)
-    ; Pueden usar la constante CS_RING_0_SEL definida en este archivo
     jmp CS_RING_0_SEL:modo_protegido
 
 
 BITS 32
 modo_protegido:
-    ; COMPLETAR - A partir de aca, todo el codigo se va a ejectutar en modo protegido
     ; Establecer selectores de segmentos DS, ES, GS, FS y SS en el segmento de datos de nivel 0
-    ; Pueden usar la constante DS_RING_0_SEL definida en este archivo
+    mov ax, DS_RING_0_SEL
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    mov fs, ax
+    mov ss, ax
 
     ; COMPLETAR - Establecer el tope y la base de la pila
+    ; setear la pila del kernel en 0x25000
+    mov esp, 0x25000
+    mov ebp, esp
+
 
     ; COMPLETAR - Imprimir mensaje de bienvenida - MODO PROTEGIDO
+    print_text_pm start_pm_msg, start_pm_len, C_FG_LIGHT_CYAN, 0x00, 0x00
 
     ; COMPLETAR - Inicializar pantalla
     
@@ -94,4 +105,3 @@ modo_protegido:
 
 ;; -------------------------------------------------------------------------- ;;
 
-%include "a20.asm"
