@@ -30,9 +30,10 @@ void print_dec(uint32_t numero, uint32_t size, uint32_t x, uint32_t y,
 void print_hex(uint32_t numero, int32_t size, uint32_t x, uint32_t y,
                uint16_t attr);
 
-void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
+extern void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
                      uint32_t cSize, uint8_t character, uint8_t attr);
 
-void screen_draw_layout(void);
+extern void screen_draw_layout(void);
+
 
 #endif //  __SCREEN_H__

@@ -58,6 +58,10 @@ void print_hex(uint32_t numero, int32_t size, uint32_t x, uint32_t y,
 
 void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
                      uint32_t cSize, uint8_t character, uint8_t attr) {
+
+  // inicializa un puntero (llamado p) que apunta a la direccion de memoria de la pantalla
+  // ca es una estructura que tiene dos campos, c y a. Representa una celda de la pantalla.
+
   ca(*p)[VIDEO_COLS] = (ca(*)[VIDEO_COLS])VIDEO;
   uint32_t f;
   uint32_t c;
@@ -70,4 +74,15 @@ void screen_draw_box(uint32_t fInit, uint32_t cInit, uint32_t fSize,
 }
 
 void screen_draw_layout(void) {
+  // limpiar la pantalla y escribir nombres
+  char* names[] = {"Pedro Fuentes Urfeig", "Sebastian Ignacio Andres", "Vicente Tenconi"};
+
+  // limpiar pantalla
+  screen_draw_box(0, 0, VIDEO_FILS, VIDEO_COLS, ' ', C_FG_WHITE | C_BG_BLACK);
+
+  // escribir nombres
+  for (int i=0; i<3; i++){
+    print(names[i], 0, 2*(i+1), C_FG_GREEN | C_BG_BLACK);
+  }
+
 }
