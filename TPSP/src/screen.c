@@ -82,7 +82,7 @@ void screen_draw_layout(void) {
 
   // escribir nombres
   for (int i=0; i<3; i++){
-    print(names[i], 0, 2*(i+1), C_FG_GREEN | C_BG_BLACK);
+    print(names[i], 0, 2*(i+1), C_BG_GREEN | C_BG_BLACK);
   }
 
 }

@@ -11,6 +11,7 @@ global start
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
 extern GDT_DESC
 extern screen_draw_layout
+extern screen_draw_box
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8

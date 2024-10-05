@@ -99,6 +99,7 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x1,
             .base_31_24 = 0x00,
         },
+    /* Offset = 40 */
     [GDT_IDX_VIDEO] =
         {
             .limit_15_0 = GDT_LIMIT_LOW(GDT_LIMIT_4KIB(VIDEO_SEGM_SIZE)),
@@ -108,7 +109,7 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .s = DESC_CODE_DATA,
             .dpl = 0x0,
             .p = 0x1,
-            .limit_19_16 = GDT_LIMIT_HIGH(GDT_LIMIT_4KIB(FLAT_SEGM_SIZE)),
+            .limit_19_16 = GDT_LIMIT_HIGH(GDT_LIMIT_4KIB(VIDEO_SEGM_SIZE)),
             .avl = 0x0,
             .l = 0x0,
             .db = 0x1,
