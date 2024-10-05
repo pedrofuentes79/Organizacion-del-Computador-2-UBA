@@ -195,6 +195,9 @@ La pantalla va a ser un arreglo de 50 filas x 80 columnas. En cada posición del
 21. Declaren un segmento adicional que describa el área de la pantalla en memoria que pueda ser utilizado sólo por el kernel. ¿Qué tamaño deberá tener considerando lo descrito en el párrafo anterior? Si el buffer de la pantalla comienza en `0x000B8000`[^3], piensen cuál debería ser la base y el límite. El tipo de este segmento debe ser de datos de lectura/escritura. Finalmente, definan el segmento en el archivo `gdt.c`.
 
 22. Observen el método `screen_draw_box` en `screen.c` y la estructura `ca` en `screen.h` . ¿Qué creen que hace el método **screen_draw_box**? ¿Cómo hace para acceder a la pantalla? ¿Qué estructura usa para representar cada carácter de la pantalla y cuanto ocupa en memoria?
+    
+    - El metodo `screen_draw_box` dibuja una caja en la pantalla, especificada por los parametros de entrada. Para acceder a la pantalla, se usa la direccion fisica de la pantalla, `VIDEO`. La estructura `ca` se usa para representar cada caracter de la pantalla y ocupa 2 bytes en memoria, `c` representa el caracter escrito y `a` representa el atributo de ese caracter, que incluye el color de fondo y el color de la letra.
+
 
 23. Escriban una rutina `screen_draw_layout` que se encargue de limpiar la pantalla y escribir el nombre de los integrantes del grupo (o lo que deseen) en la misma en el archivo `screen.c` y llamen a dicho método desde `kernel.asm`. Pueden usar diferentes fondos, colores e incorporar dibujos si así lo quisieran.
 
