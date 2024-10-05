@@ -4,3 +4,4 @@
 *.img
 *.o
 *.bin.elf
+.gdb_history
