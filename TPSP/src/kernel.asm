@@ -10,11 +10,17 @@ global start
 
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
 extern GDT_DESC
+extern screen_draw_layout
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
 %define DS_RING_0_SEL 24
-%define C_FG_LIGHT_CYAN (0xB)
+%define C_FG_LIGHT_CYAN (0x0B)
+%define C_BG_MAGENTA    (0x5 << 4)
+%define C_FG_MAGENTA       (0x5)
+%define C_FG_LIGHT_RED (0x0C)
+
+
 
 
 BITS 16
@@ -86,8 +92,17 @@ modo_protegido:
     print_text_pm start_pm_msg, start_pm_len, C_FG_LIGHT_CYAN, 0x00, 0x00
 
     ; COMPLETAR - Inicializar pantalla
+
+    ; test de screen draw box
+    ; push C_FG_LIGHT_RED
+    ; push 0x61
+    ; push 0x000A
+    ; push 0x000A
+    ; push 0x0028
+    ; push 0x001E
+    ; call screen_draw_box
+    call screen_draw_layout
     
-   
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
     mov ebx, 0xFFFF
