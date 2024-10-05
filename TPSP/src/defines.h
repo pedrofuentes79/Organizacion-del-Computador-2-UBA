@@ -67,8 +67,10 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 #define DESC_TYPE_READ_WRITE   0x02
 
 /* COMPLETAR - Tamaños de segmentos */ 
-#define FLAT_SEGM_SIZE 0x00033100 
-#define VIDEO_SEGM_SIZE 0xFFFFF // depende del tamano del buffer??
+// 209152 B = 817 MiB / 4 KiB
+#define FLAT_SEGM_SIZE 209152
+// el * 2 es porque cada celda de la pantalla son 2 bytes
+#define VIDEO_SEGM_SIZE (ROWS * COLS * 2)
 
 
 /* Direcciones de memoria */
