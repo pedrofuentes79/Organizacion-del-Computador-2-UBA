@@ -2,3 +2,5 @@
 *.tsk
 *.sym
 *.img
+*.o
+*.bin.elf
