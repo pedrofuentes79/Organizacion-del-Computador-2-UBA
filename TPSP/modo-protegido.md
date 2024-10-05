@@ -90,7 +90,7 @@ Ahora, trabajemos con el código provisto por la cátedra. Vamos a completar la 
 6. En el archivo `gdt.h` observen las estructuras: `struct gdt_descriptor_t` y el `struct gdt_entry_t`. ¿Qué creen que contiene la variable `extern gdt_entry_t gdt;` y `extern gdt_descriptor_t GDT_DESC;`?
 
     - `gdt_descriptor_t` es una direccion logica que nos va a llevar a una entrada de la gdt.
-    - `gdf_entry_t` es un struct que representa un descriptor en la GDT.
+    - `gdt_entry_t` es un struct que representa un descriptor en la GDT.
 
 
 7. Buscar en el Volumen 3 del manual de Intel, sección 3.4.2 *Segment Selectors* el formato de los selectores de segmento. Observar en el archivo `defines.h` las constantes con los valores de distintos selectores de segmento posibles. Completen los defines faltantes en `defines.h` y entiendan la utilidad de las macros allí definidas. 

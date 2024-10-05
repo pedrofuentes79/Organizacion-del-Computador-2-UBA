@@ -17,9 +17,6 @@ gdt_entry_t gdt[GDT_COUNT] = {
     /* Offset = 0x00 */
     [GDT_IDX_NULL_DESC] =
         {
-            // El descriptor nulo es el primero que debemos definir siempre
-            // Cada campo del struct se matchea con el formato que figura en el manual de intel
-            // Es una entrada en la GDT.
             .limit_15_0 = 0x0000,
             .base_15_0 = 0x0000,
             .base_23_16 = 0x00,
@@ -34,12 +31,9 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x00,
             .base_31_24 = 0x00,
         },
-    /* Offset = 0x08 */
+    /* Offset = 8 */
     [GDT_IDX_CODE_0] =
         {
-            // El descriptor nulo es el primero que debemos definir siempre
-            // Cada campo del struct se matchea con el formato que figura en el manual de intel
-            // Es una entrada en la GDT.
             .limit_15_0 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) & (0x0000FFFF),
             .base_15_0 = 0x0000,
             .base_23_16 = 0x00,
@@ -54,11 +48,9 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x01,
             .base_31_24 = 0x00,
         },
-      [GDT_IDX_CODE_3] =
+    /* Offset = 16 */
+    [GDT_IDX_CODE_3] =
         {
-            // El descriptor nulo es el primero que debemos definir siempre
-            // Cada campo del struct se matchea con el formato que figura en el manual de intel
-            // Es una entrada en la GDT.
             .limit_15_0 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) & (0x0000FFFF),
             .base_15_0 = 0x0000,
             .base_23_16 = 0x00,
@@ -73,11 +65,9 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x01,
             .base_31_24 = 0x00,
         },
-        [GDT_IDX_DATA_0] =
+    /* Offset = 24 */
+    [GDT_IDX_DATA_0] =
         {
-            // El descriptor nulo es el primero que debemos definir siempre
-            // Cada campo del struct se matchea con el formato que figura en el manual de intel
-            // Es una entrada en la GDT.
             .limit_15_0 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) & (0x0000FFFF),
             .base_15_0 = 0x0000,
             .base_23_16 = 0x00,
@@ -92,11 +82,9 @@ gdt_entry_t gdt[GDT_COUNT] = {
             .g = 0x01,
             .base_31_24 = 0x00,
         },
-        [GDT_IDX_DATA_3] =
+    /* Offset = 32 */
+    [GDT_IDX_DATA_3] =
         {
-            // El descriptor nulo es el primero que debemos definir siempre
-            // Cada campo del struct se matchea con el formato que figura en el manual de intel
-            // Es una entrada en la GDT.
             .limit_15_0 = GDT_LIMIT_4KIB(FLAT_SEGM_SIZE) & (0x0000FFFF),
             .base_15_0 = 0x0000,
             .base_23_16 = 0x00,
@@ -115,5 +103,7 @@ gdt_entry_t gdt[GDT_COUNT] = {
 };
 
 // Aca hay una inicializacion estatica de una structura que tiene su primer componente el tamano 
-// y en la segunda, la direccion de memoria de la GDT. Observen la notacion que usa. 
+// y en la segunda, la direccion de memoria de la GDT. Observen la notacion que usa.
+
+// esta bien que el puntero sea de 32 bits porque en qemu estamos usando direcciones de 32 bits
 gdt_descriptor_t GDT_DESC = {sizeof(gdt) - 1, (uint32_t)&gdt};
