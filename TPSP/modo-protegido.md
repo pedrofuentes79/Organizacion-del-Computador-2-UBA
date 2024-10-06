@@ -203,6 +203,9 @@ La pantalla va a ser un arreglo de 50 filas x 80 columnas. En cada posición del
 
 24. Resumen final, discutan en el grupo qué pasos tuvieron que hacer para activar el procesador en modo protegido. Repasen todo el código que estuvieron completando y traten de comprenderlo en detalle ¿Qué cosas les parecieron más interesantes?
 
+    - Para activar el procesador en modo protegido, tuvimos que definir los segmentos de la GDT, cargar la GDT, habilitar el bit PE de CR0, hacer un jump far al segmento de codigo de nivel 0. Luego, ya en modo protegido, cargar los selectores de segmento restantes, setear la pila del kernel.
+    - Lo mas interesante nos parecio la parte del video, mas que nada la parte de como se inicializa y  se accede a la pantalla, y como se dibuja en ella.
+
 > **Nota:** Si bien el código que están escribiendo es muy simple, es importante que lo hagan con cuidado y que se aseguren de que cada paso esté funcionando correctamente antes de pasar al siguiente. Si tienen dudas, no duden en consultar a los docentes.
 
 ### Sobre el A20
