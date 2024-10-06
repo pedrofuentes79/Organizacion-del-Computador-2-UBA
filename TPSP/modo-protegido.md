@@ -46,7 +46,8 @@ Las preguntas a continuación las pueden responder inline o en otro archivo mark
 
 1. Explorando el manual Intel *Volumen 3: System Programming. Sección 2.2 Modes of Operation*. ¿A qué nos referimos con modo real y con modo protegido en un procesador Intel? ¿Qué particularidades tiene cada modo?
 
-    El modo real y el modo protegido de un procesador Intel son modos operativos que soporta el CPU. El modo protegido es el nativo del procesador; en este se encuentran presentes un conjunto de características arquitectónicas, flexibilidad, alto rendimiento y compatibilidad con el software existente. El modo real es el que proporciona el entorno de programación del procesador Intel 8086, junto con la capacidad de cambiar al modo protegido y otros.
+    - El modo real es el modo de operación en el que el procesador se encuentra al arrancar. En este modo, el procesador puede direccionar hasta 1 MB de memoria, no hay protección de memoria, no hay niveles de privilegio y no hay soporte para multitarea. 
+    - El modo protegido es un modo de operación en el que el procesador puede direccionar hasta 4 GB de memoria, tiene protección de memoria, niveles de privilegio y soporte para multitarea.
 
 2. Comenten en su equipo, ¿Por qué debemos hacer el pasaje de modo real a modo protegido? ¿No podríamos simplemente tener un sistema operativo en modo real? ¿Qué desventajas tendría?
 
