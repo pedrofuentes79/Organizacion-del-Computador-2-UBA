@@ -46,7 +46,8 @@ Las preguntas a continuación las pueden responder inline o en otro archivo mark
 
 1. Explorando el manual Intel *Volumen 3: System Programming. Sección 2.2 Modes of Operation*. ¿A qué nos referimos con modo real y con modo protegido en un procesador Intel? ¿Qué particularidades tiene cada modo?
 
-    El modo real y el modo protegido de un procesador Intel son modos operativos que soporta el CPU. El modo protegido es el nativo del procesador; en este se encuentran presentes un conjunto de características arquitectónicas, flexibilidad, alto rendimiento y compatibilidad con el software existente. El modo real es el que proporciona el entorno de programación del procesador Intel 8086, junto con la capacidad de cambiar al modo protegido y otros.
+    - El modo real es el modo de operación en el que el procesador se encuentra al arrancar. En este modo, el procesador puede direccionar hasta 1 MB de memoria, no hay protección de memoria, no hay niveles de privilegio y no hay soporte para multitarea. 
+    - El modo protegido es un modo de operación en el que el procesador puede direccionar hasta 4 GB de memoria, tiene protección de memoria, niveles de privilegio y soporte para multitarea.
 
 2. Comenten en su equipo, ¿Por qué debemos hacer el pasaje de modo real a modo protegido? ¿No podríamos simplemente tener un sistema operativo en modo real? ¿Qué desventajas tendría?
 
@@ -202,6 +203,9 @@ La pantalla va a ser un arreglo de 50 filas x 80 columnas. En cada posición del
 23. Escriban una rutina `screen_draw_layout` que se encargue de limpiar la pantalla y escribir el nombre de los integrantes del grupo (o lo que deseen) en la misma en el archivo `screen.c` y llamen a dicho método desde `kernel.asm`. Pueden usar diferentes fondos, colores e incorporar dibujos si así lo quisieran.
 
 24. Resumen final, discutan en el grupo qué pasos tuvieron que hacer para activar el procesador en modo protegido. Repasen todo el código que estuvieron completando y traten de comprenderlo en detalle ¿Qué cosas les parecieron más interesantes?
+
+    - Para activar el procesador en modo protegido, tuvimos que definir los segmentos de la GDT, cargar la GDT, habilitar el bit PE de CR0, hacer un jump far al segmento de codigo de nivel 0. Luego, ya en modo protegido, cargar los selectores de segmento restantes, setear la pila del kernel.
+    - Lo mas interesante nos parecio la parte del video, mas que nada la parte de como se inicializa y  se accede a la pantalla, y como se dibuja en ella.
 
 > **Nota:** Si bien el código que están escribiendo es muy simple, es importante que lo hagan con cuidado y que se aseguren de que cada paso esté funcionando correctamente antes de pasar al siguiente. Si tienen dudas, no duden en consultar a los docentes.
 
