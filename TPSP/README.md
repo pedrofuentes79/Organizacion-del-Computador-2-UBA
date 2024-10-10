@@ -5,6 +5,7 @@ Arquitectura y Organización del Computador
 ## Partes
 
 - [Parte 1: Pasaje a modo protegido](modo-protegido.md)
+- [Parte 2: Interrupciones](interrupciones.md)
 
 ## Introducción
 
