@@ -10,6 +10,8 @@ global start
 
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
 extern GDT_DESC
+extern IDT_DESC
+extern idt_init
 extern screen_draw_layout
 extern screen_draw_box
 
@@ -46,7 +48,6 @@ BITS 16
 start:
     ; COMPLETAR - Deshabilitar interrupciones
     cli
-
 
     ; Cambiar modo de video a 80 X 50
     mov ax, 0003h
@@ -93,17 +94,23 @@ modo_protegido:
     print_text_pm start_pm_msg, start_pm_len, C_FG_LIGHT_CYAN, 0x00, 0x00
 
     ; COMPLETAR - Inicializar pantalla
-
-    ; test de screen draw box
-    ; push C_FG_LIGHT_RED
-    ; push 0x61
-    ; push 0x000A
-    ; push 0x000A
-    ; push 0x0028
-    ; push 0x001E
-    ; call screen_draw_box
     call screen_draw_layout
     
+    ; inicializar y cargar IDT
+    call idt_init
+    lidt [IDT_DESC]
+
+    ; reiniciar y habilitar el PIC
+
+
+    ; habilitar interrupciones
+        ; se puede chequear que anden usando int3
+
+    ; probar syscall
+
+    ; probar generar una excepcion
+
+
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
     mov ebx, 0xFFFF

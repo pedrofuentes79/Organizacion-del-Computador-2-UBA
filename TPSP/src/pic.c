@@ -22,6 +22,29 @@ void pic_finish2(void) {
 
 // COMPLETAR: implementar pic_reset()
 void pic_reset() {
+  // ================== PIC 1 ======================
+  // icw1
+  outb(PIC1_PORT, 0x11); // irqs activas x flanco, cascada, icw4
+  // icw2
+  outb(PIC1_PORT + 1, 32); // irq0-7 en 32-39
+  // icw3
+  outb(PIC1_PORT + 1, 4); // tiene un slave en irq2
+  // icw4
+  outb(PIC1_PORT + 1, 1); // modo no buffered, fin de interrupcion normal
+  // ocw1
+  outb(PIC1_PORT + 1, 0xFF); // deshabilito todas las interrupciones
+
+  // ================== PIC 2 ======================
+  // icw1
+  outb(PIC2_PORT, 0x11); // irqs activas x flanco, cascada, icw4
+  // icw2
+  outb(PIC2_PORT + 1, 40); // irq8-15 en 40-47 (40 es el primer irq del pic2)
+  // icw3
+  outb(PIC2_PORT + 1, 2); // "Ey, PIC2, sos un slave del PIC1, estás en el irq2"
+  // icw4
+  outb(PIC2_PORT + 1, 1); // modo no buffered, fin de interrupcion normal
+  // ocw1
+  outb(PIC2_PORT + 1, 0xFF); // deshabilito todas las interrupciones
 }
 
 void pic_enable() {

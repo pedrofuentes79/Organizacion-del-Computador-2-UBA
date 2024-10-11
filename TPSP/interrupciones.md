@@ -50,6 +50,12 @@ En el archivo idt.c pueden encontrar la definición de cada una de las entradas 
 
 a) :pen_fountain: Observen que la macro `IDT_ENTRY0` corresponde a cada entrada de la IDT de nivel 0 ¿A qué se refiere cada campo? ¿Qué valores toma el campo offset?
 
+- `offset` es lo que le tenemos que sumar a la dirección base de la IDT para llegar a la dirección de la rutina de atención de la interrupción.
+- `segsel` es el selector de segmento de código que se va a usar para atender la interrupción.
+- `type` es el tipo de descriptor de la IDT. (Interrupt Gate, Trap Gate, Task Gate)
+- `dpl` es el nivel de privilegio al que se va a atender la interrupción.
+- `present` es un bit que indica si la entrada de la IDT está presente en memoria.
+
 Pueden ayudarse de la siguiente figura.
 Observen que los atributos son los bits 15 a 5 de la palabra de 32 bits superior.
 
@@ -60,9 +66,14 @@ Observen que los atributos son los bits 15 a 5 de la palabra de 32 bits superior
 b) :pen_fountain: Completar los campos de Selector de Segmento (`segsel`) y los atributos (`attr`) de manera que al usarse la macro defina una *Interrupt Gate* de nivel 0.
 Para el Selector de Segmento, recuerden que la rutina de atención de interrupción es un código que corre en el nivel del kernel. ¿Cuál sería un selector de segmento apropiado acorde a los índices definidos en la `GDT[segsel]`? ¿Y el valor de los atributos si usamos _Gate Size_ de 32 bits?
 
+- El selector de segmento de codigo que tenemos que usar es el de nivel 0. En este caso, se llama `GDT_CODE_0_SEL`.
+- Al usar gate size de 32 bits, hay que setear el bit D en 1, es decir que queda 1110.
+
 c) :pen_fountain: De manera similar, completar la macro `IDT_ENTRY3` para que defina interrupciones que puedan ser disparadas por código no privilegiado (nivel 3).
 
 2. Completar la función idt_init() con las entradas correspondientes a las interrupciones de reloj y teclado ¿Qué macro utilizarían?
+
+- tenemos que usar la macro `IDT_ENTRY0` ya que el teclado y el clock corresponden a nivel 0, ya que son interrupciones de hardware.
 
 3. Nos queda definir dos system calls. Estas son interrupciones de software que se van a poder usar con nivel de privilegio de usuario, en nuestro caso, nivel 3.
 Usar la macro correspondiente para definir system calls con número 88 y 98.
