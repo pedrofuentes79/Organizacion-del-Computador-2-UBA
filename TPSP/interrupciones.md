@@ -103,6 +103,8 @@ La función `next_clock` está definida en `isr.asm`.
 
 :pen_fountain: ¿Qué oficiaría de prólogo y epílogo de estas rutinas? ¿Qué marca el `iret` y por qué no usamos `ret`?
 
+El prologo de estas rutinas seria el pushadd y el epilogo la instruccion popadd. Debemos usar el iret ya que antes de atender la rutina el procesador pushea en la pila registros y entonces te asegura sacarlos de la misma. Guardamos los registros porque no sabemos cuando sucederan las interrupciones por lo que los preservamos en la pila.
+
 4. Completen la rutina de interrupción de teclado. La misma debe leer el scan code del puerto `0x60` y luego procesarlo con la función `process_scancode` provista en `keyboard_input.c`.
 
 5. Escribir las rutinas asociadas a las interrupciones 88 y 98, para que modifique el valor de eax por 0x58 y 0x62 respectivamente.
