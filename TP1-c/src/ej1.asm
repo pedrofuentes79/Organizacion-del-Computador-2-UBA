@@ -6,12 +6,12 @@ section .rodata
 	mask_coef_blue:  times 4 dd 0x00_FF_00_00
 	mask_coef_green: times 4 dd 0x00_00_FF_00
 	mask_coef_red:   times 4 dd 0x00_00_00_FF
+	coef_alph: times 4 dd 0xFF_00_00_00
 
 	; coeficientes para el filtro (calculo luminosidad)
 	coef_red: times 4 dd 0.2126
 	coef_green: times 4 dd 0.7152
 	coef_blue: times 4 dd 0.0722
-	coef_alph: times 4 dd 0xFF_00_00_00
 
 	mask_shuf: db 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03
 

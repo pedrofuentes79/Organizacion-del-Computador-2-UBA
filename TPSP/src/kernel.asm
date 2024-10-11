@@ -14,6 +14,8 @@ extern IDT_DESC
 extern idt_init
 extern screen_draw_layout
 extern screen_draw_box
+extern pic_reset
+extern pic_enable
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
@@ -96,20 +98,25 @@ modo_protegido:
     ; COMPLETAR - Inicializar pantalla
     call screen_draw_layout
     
-    ; inicializar y cargar IDT
+    ; inicializar y cargar IDTs
     call idt_init
     lidt [IDT_DESC]
 
     ; reiniciar y habilitar el PIC
-
+    call pic_reset
+    call pic_enable
 
     ; habilitar interrupciones
-        ; se puede chequear que anden usando int3
+    sti
+
+    ; se puede chequear que anden usando int3
+    ; int 0x03;
 
     ; probar syscall
+    int 0x58
 
     ; probar generar una excepcion
-
+    ; int 0x88
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
