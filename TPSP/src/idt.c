@@ -40,11 +40,14 @@ idt_descriptor_t IDT_DESC = {sizeof(idt) - 1, (uint32_t)&idt};
 
 /* COMPLETAR: Dado un numero de de interrupcion asigna a `idt` la entrada
  * correspondiente con nivel 3 */
+
+// deben tener nivel 0 de ejecucion. el dpl es el que restringe su llamado
+
 #define IDT_ENTRY3(numero)                                                     \
   idt[numero] = (idt_entry_t) {                                                \
     .offset_31_16 = HIGH_16_BITS(&_isr##numero),                               \
     .offset_15_0 = LOW_16_BITS(&_isr##numero),                                 \
-    .segsel = GDT_CODE_3_SEL,                                                  \
+    .segsel = GDT_CODE_0_SEL,                                                  \
     .type = 0xE,                                                               \
     .dpl = 0x3,                                                                \
     .present = 0x1                                                             \
@@ -79,6 +82,7 @@ void idt_init() {
   IDT_ENTRY0(33);
   
   // COMPLETAR: Syscalls
+  // deben tener nivel 0 de ejecucion. el dpl es el que restringe su llamado
   IDT_ENTRY3(88);
   IDT_ENTRY3(98);
 }

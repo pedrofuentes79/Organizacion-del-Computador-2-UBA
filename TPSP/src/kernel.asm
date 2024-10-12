@@ -109,14 +109,8 @@ modo_protegido:
     ; habilitar interrupciones
     sti
 
-    ; se puede chequear que anden usando int3
-    ; int 0x03;
-
     ; probar syscall
-    int 0x58
-
-    ; probar generar una excepcion
-    ; int 0x88
+    int 88
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
