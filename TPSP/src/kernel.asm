@@ -108,16 +108,13 @@ modo_protegido:
     call pic_enable
 
     ; cambiar frecuencia del clock
-    ; call pic_change_freq
+    call pic_change_freq
 
     ; habilitar interrupciones
     sti
 
     ; probar syscall
     int 88
-
-
-
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
