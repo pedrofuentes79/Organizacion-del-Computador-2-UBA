@@ -16,6 +16,7 @@ extern screen_draw_layout
 extern screen_draw_box
 extern pic_reset
 extern pic_enable
+extern pic_change_freq
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
@@ -106,11 +107,17 @@ modo_protegido:
     call pic_reset
     call pic_enable
 
+    ; cambiar frecuencia del clock
+    ; call pic_change_freq
+
     ; habilitar interrupciones
     sti
 
     ; probar syscall
     int 88
+
+
+
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF

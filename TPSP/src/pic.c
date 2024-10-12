@@ -10,6 +10,9 @@
 #define PIC1_PORT 0x20
 #define PIC2_PORT 0xA0
 
+#define TIMER_TICK_CONTROL 0x43
+#define TIMER_TICK_CHANNEL0 0x40
+
 static __inline __attribute__((always_inline)) void outb(uint32_t port,
                                                          uint8_t data) {
   __asm __volatile("outb %0,%w1" : : "a"(data), "d"(port));
@@ -55,4 +58,15 @@ void pic_enable() {
 void pic_disable() {
   outb(PIC1_PORT + 1, 0xFF);
   outb(PIC2_PORT + 1, 0xFF);
+}
+
+void pic_change_freq(){
+  outb(TIMER_TICK_CONTROL, 0x36); 
+  pic_finish1();
+
+  uint16_t divisor = 2;
+  outb(TIMER_TICK_CHANNEL0, divisor & 0xFF); // envio los bytes menos significativos del divisor
+  outb(TIMER_TICK_CHANNEL0, divisor >> 8); // envio los bytes mas significativos del divisor
+  
+  pic_finish1();
 }
