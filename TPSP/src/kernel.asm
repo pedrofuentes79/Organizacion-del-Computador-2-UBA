@@ -73,6 +73,11 @@ modo_protegido:
     ; COMPLETAR - Inicializar pantalla
     
    
+    ; Inicializar el directorio de paginas
+
+    ; Cargar directorio de paginas
+
+    ; Habilitar paginacion
     ; COMPLETAR - Inicializar y cargar la IDT
 
     ; COMPLETAR - Reiniciar y habilitar el controlador de interrupciones
@@ -86,6 +91,10 @@ modo_protegido:
     ; Probar Sys_call
 
     ; Probar generar una excepción
+
+    ; Inicializar el directorio de paginas de la tarea de prueba
+    ; Cargar directorio de paginas de la tarea
+    ; Restaurar directorio de paginas del kernel
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF

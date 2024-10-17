@@ -11,7 +11,7 @@
 #include "isr.h"
 #include "screen.h"
 
-idt_entry_t idt[255] = {0};
+idt_entry_t idt[256] = {0};
 
 idt_descriptor_t IDT_DESC = {sizeof(idt) - 1, (uint32_t)&idt};
 
