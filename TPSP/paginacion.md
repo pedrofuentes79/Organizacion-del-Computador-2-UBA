@@ -119,22 +119,39 @@ gdb para acceder a la información sobre el mapeo de páginas:
 
 a)  ¿Cuántos niveles de privilegio podemos definir en las estructuras de
     paginación?
+- Hay solo dos niveles de privilegio, usuario y supervisor.
 
 b)  ¿Cómo se traduce una dirección lógica en una dirección física? ¿Cómo
     participan la dirección lógica, el registro de control `CR3`, el
     directorio y la tabla de páginas? Recomendación: describan el
     proceso en pseudocódigo
 
+```c
+
+uint32_t virtual_to_physical_address(uint32_t virt, uint32_t cr3) {
+    directory = cr3 & 0xFFFFF000;
+
+    dir_index = (virt >> 22) & 0x3FF; // los 10 bits mas significativos
+    page_table_index = (virt >> 12) & 0x3FF; // los 10 bits del medio
+    offset = virt & 0xFFF; // los 12 bits menos significativos
+
+    page_table = directory[dir_index] & 0xFFFFF000; // solo la direccion
+    page_address = page_table[page_table_index] & 0xFFFFF000; // solo la direccion
+    physical_address = page_address | offset;
+    return physical_address;
+}
+```
+
 c)  ¿Cuál es el efecto de los siguientes atributos en las entradas de la
     tabla de página?
 
-  - `D`
-  - `A`
-  - `PCD`
-  - `PWT`
-  - `U/S`
-  - `R/W`
-  - `P`
+  - `D`: Indica si la pagina esta dirty o no. Se setea por hardware cuando se escribe en la pagina. Se usa para manejar la coherencia de la cache.
+  - `A`: Indica si la pagina fue accedida o no. Se setea por hardware cuando se escribe/lee en la pagina.
+  - `PCD`: Cache Disable. Si esta en 1, la pagina no se guardara en la cache.
+  - `PWT`: Page Write Through. Si esta en 1, las escrituras se hacen hasta el ultimo nivel de jerarquia de memoria.
+  - `U/S`: User/Supervisor. Indica si la pagina tiene privilegios de usuario o de supervisor.
+  - `R/W`: Read/Write. Indica si la pagina es de solo lectura o de lectura/escritura.
+  - `P`: Present. Indica si la pagina esta presente en memoria fisica, si no esta presente se produce un page fault cuando se intenta acceder a la pagina.
 
 
 d)  ¿Qué sucede si los atributos U/S y R/W del directorio y de la tabla
@@ -142,10 +159,18 @@ d)  ¿Qué sucede si los atributos U/S y R/W del directorio y de la tabla
     página determinada en ese caso? Hint: buscar la tabla *Combined
     Page-Directory and Page-Table Protection* del manual 3 de Intel
 
+- Si alguno de los dos atributos es de privilegio supervisor, el efecto final es que la pagina sera de privilegio supervisor. Si ambos atributos son de privilegio usuario, la pagina sera de privilegio usuario.
+
+- Con el R/W pasa algo distinto. Para empezar, si esta apagado el bit WP de CR0, cualquier entrada cuyo privilegio final sea de usuario tendra permisos para escribir. Si no, ambas tablas deberan especificar que la pagina sea de escritura, caso contrario es read-only.
+
 e)  Suponiendo que el código de la tarea ocupa dos páginas y
     utilizaremos una página para la pila de la tarea. ¿Cuántas páginas
     hace falta pedir a la unidad de manejo de memoria para el
     directorio, tablas de páginas y la memoria de una tarea?
+
+- Necesitamos una para el directorio, una para la tabla de paginas, dos para el codigo y otra para la pila.
+TODO: chequear esto
+Ademas, vamos a necesitar el acceso a la pagina que tiene el codigo del kernel. En total, son 6 paginas.
 
 f)  Completen las entradas referentes a MMU de `defines.h` y comprendan
     la función y motivación de dichos defines:
