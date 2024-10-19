@@ -192,6 +192,10 @@ g)  ¿Qué es el buffer auxiliar de traducción (*translation lookaside
     en la TLB? Al desalojar una entrada determinada de la TLB ¿Se ve
     afectada la homóloga en la tabla original para algún caso?
 
+- El translation lookaside buffer es un tabla de traducciones pre-computadas que almacena las últimas traducciones realizadas para no realizar el computo nuevamente. Es necesario purgarlo al introducir modificaciones a nuestras estructuras de paginación ya que debemos evitar que las direcciones pre-computadas que ya no son válidas se sigan empleando, para esto realizamos un intercambio del registro CR3 con un valor temporal; para luego restaurarlo. 
+- Cada traduccion de la TLB posee un Número de Página Física y Virtual, los derechos de acceso: R/W, U/S, XD (solo en algunas arquitecturas) y Protection Key (usado en sistemas con paginación de 4 o 5 niveles), flags de estado: dirty flag y accessed flag, y el tipo de memoria.
+- Al desalojar una entrada determinada de la TLB no se ve afectada la homóloga en la tabla original, pero si se deberá calcular nuevamente si quiere usarse esa entrada en un futuro. Además, si se modifica una entrada en la tabla de páginas, si la TLB no sufre modificaciones entonces podrá seguir tulizando la entrada anterior hasta que se purge.
+
 ### Segunda parte: Activando el mecanismo de paginación.
 
 a)  Escriban el código de las funciones `mmu_next_free_kernel_page`,
