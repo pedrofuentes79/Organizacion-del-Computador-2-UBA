@@ -54,6 +54,9 @@ void mmu_init(void) {}
  * @return devuelve la dirección de memoria de comienzo de la próxima página libre de kernel
  */
 paddr_t mmu_next_free_kernel_page(void) {
+  paddr_t ret = next_free_kernel_page;
+  next_free_kernel_page += PAGE_SIZE;
+  return ret;
 }
 
 /**
@@ -61,6 +64,9 @@ paddr_t mmu_next_free_kernel_page(void) {
  * @return devuelve la dirección de memoria de comienzo de la próxima página libre de usuarix
  */
 paddr_t mmu_next_free_user_page(void) {
+  paddr_t ret = next_free_user_page;
+  next_free_user_page += PAGE_SIZE;
+  return ret;
 }
 
 /**
@@ -70,6 +76,13 @@ paddr_t mmu_next_free_user_page(void) {
  * de páginas usado por el kernel
  */
 paddr_t mmu_init_kernel_dir(void) {
+  // Inicializamos el directorio de páginas
+  kmemset(kpd, 0x00, PAGE_SIZE);
+  // Mapeamos las primeras 4MiB con identity mapping
+  for (uint32_t i = 0; i <= identity_mapping_end; i += PAGE_SIZE) {
+    mmu_map_page(KERNEL_PAGE_DIR, i, i, MMU_P | MMU_W);
+  }
+  return KERNEL_PAGE_DIR;
 }
 
 /**
@@ -81,6 +94,7 @@ paddr_t mmu_init_kernel_dir(void) {
  * @param attrs los atributos a asignar en la entrada de la tabla de páginas
  */
 void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
+
 }
 
 /**
