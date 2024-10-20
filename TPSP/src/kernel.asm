@@ -17,6 +17,7 @@ extern screen_draw_box
 extern pic_reset
 extern pic_enable
 extern pic_change_freq
+extern mmu_init_kernel_dir
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
@@ -25,7 +26,6 @@ extern pic_change_freq
 %define C_BG_MAGENTA    (0x5 << 4)
 %define C_FG_MAGENTA       (0x5)
 %define C_FG_LIGHT_RED (0x0C)
-
 
 
 
@@ -109,6 +109,16 @@ modo_protegido:
 
     ; cambiar frecuencia del clock
     call pic_change_freq
+
+    
+    ; habilito paginacion
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+    
+    call mmu_init_kernel_dir
+    and eax, 0xFFFFF000 ; los primeros 20 bits nada mas, resto en 0
+    mov cr3, eax
 
     ; habilitar interrupciones
     sti
