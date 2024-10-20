@@ -117,9 +117,9 @@ MMU_ENTRY_PADDR(X)  devuelve la dirección física de la base de un page frame o
 
 /* Direcciones fisicas de directorios y tablas de paginas del KERNEL */
 /* -------------------------------------------------------------------------- */
-#define KERNEL_PAGE_DIR     (0x00025000)
-#define KERNEL_PAGE_TABLE_0 (0x00026000)
-#define KERNEL_STACK        (0x00025000)
+#define KERNEL_PAGE_DIR     (0x25000)
+#define KERNEL_PAGE_TABLE_0 (0x26000)
+#define KERNEL_STACK        (0x25000)
 
 
 #endif //  __DEFINES_H__

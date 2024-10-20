@@ -89,18 +89,17 @@ paddr_t mmu_init_kernel_dir(void) {
   // shifteo 12 bits para que quede con offset = 0,
   // ya que los primeros 20 bits son la direccion y el resto atributos
   kpd[0].pt = MMU_ENTRY_PADDR((uint32_t)&kpt[0]) >> 12;
-  kpd[0].attrs = MMU_P | MMU_W; // present y (writable?)
-
+  kpd[0].attrs = MMU_P | MMU_W; // present y writable (le tengo que mapear cosas, asi que lo tengo que escribir)
 
   // identity mapping
-  paddr_t free_page = mmu_next_free_kernel_page();
+  paddr_t current_page = 0;
   uint32_t i = 0;
-  while (free_page <= identity_mapping_end) {
-    zero_page(free_page);
-    kpt[i].page = free_page >> 12;
-    kpt[i].attrs = MMU_P | MMU_W;
+  while (current_page <= identity_mapping_end){
+    zero_page(current_page);
+    kpt[i].page = current_page >> 12; // guardo el page frame
+    kpt[i].attrs = MMU_P | MMU_W;     // present y writable
 
-    free_page = mmu_next_free_kernel_page();
+    current_page = current_page + PAGE_SIZE;
     i++;
   }
 

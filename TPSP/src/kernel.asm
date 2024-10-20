@@ -89,9 +89,8 @@ modo_protegido:
     mov ss, ax
 
     ; setear la pila del kernel en 0x25000
-    mov esp, 0x30000 ; cambio esto porque ahi esta el kpd ahora...
+    mov esp, 0x25000
     mov ebp, esp
-
 
     ; COMPLETAR - Imprimir mensaje de bienvenida - MODO PROTEGIDO
     print_text_pm start_pm_msg, start_pm_len, C_FG_LIGHT_CYAN, 0x00, 0x00
@@ -123,7 +122,6 @@ modo_protegido:
     ; habilitar interrupciones
     sti
 
-    ; probar syscall
     int 88
 
     ; Ciclar infinitamente 
