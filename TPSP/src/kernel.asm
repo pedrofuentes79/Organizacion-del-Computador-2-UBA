@@ -89,7 +89,7 @@ modo_protegido:
     mov ss, ax
 
     ; setear la pila del kernel en 0x25000
-    mov esp, 0x25000
+    mov esp, 0x30000 ; cambio esto porque ahi esta el kpd ahora...
     mov ebp, esp
 
 
@@ -109,17 +109,17 @@ modo_protegido:
 
     ; cambiar frecuencia del clock
     call pic_change_freq
-
     
+    ; INICIO KPD
+    call mmu_init_kernel_dir
+    and eax, 0xFFFFF000 ; los primeros 20 bits nada mas, resto en 0
+    mov cr3, eax
+
     ; habilito paginacion
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
     
-    call mmu_init_kernel_dir
-    and eax, 0xFFFFF000 ; los primeros 20 bits nada mas, resto en 0
-    mov cr3, eax
-
     ; habilitar interrupciones
     sti
 
