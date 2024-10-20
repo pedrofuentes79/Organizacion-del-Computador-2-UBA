@@ -223,6 +223,11 @@ b)  Completen el código de `copy_page`, ¿por qué es necesario mapear y
     `SRC_VIRT_PAGE` y `DST_VIRT_PAGE`? ¿Por qué es necesario obtener el
     CR3 con rcr3()?
 
+- Es necesario mapear `src` y `dst` a una direccion virtual intermedia ya que, para escribir los datos de la pagina `src` en la pagina `dst` tenemos que poder leer una y escrbir la otra. Como ya esta activada la paginacion, necesitamos tener la direccion virtual de `src` y `dst` para esto. Entonces, las mapeamos cada una a una direccion intermedia, que usaremos para escribir. Luego, las desmapeamos, ya que no queremos que esas paginas sigan apuntando a `src` y `dst`. Ademas, podriamos tener problemas si las dejamos mapeadas, ya que una direccion fisica tendria asociada dos direcciones virtuales.
+
+- Necesitamos obtener CR3 con `rcr3()` ya que necesitamos ejecutar un `mov (registro general), cr3`, y para eso usamos la funcion `rcr3()` que ejecuta el codigo assembler necesario para obtener el valor actual de CR3.
+
+
 c)  Realicen una prueba donde se compruebe el funcionamiento de
     `copy_page`. Pueden usar gdb con el comando `x` para inspeccionar el
     contenido de direcciones virtuales y `xp` para inspeccionar el
