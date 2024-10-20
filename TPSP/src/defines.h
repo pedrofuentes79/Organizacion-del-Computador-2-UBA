@@ -38,8 +38,6 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
  * Definirlos a partir de los índices de la GDT, definidos más arriba 
  * Hint: usar operadores "<<" y "|" (shift y or) */
 
-// duda. estos selectores son asi: 1,2,3, 
-// deberian ser 8,16,24?
 #define GDT_CODE_0_SEL (GDT_IDX_CODE_0 << 3) | 0x00
 #define GDT_CODE_3_SEL (GDT_IDX_CODE_3 << 3) | 0x03
 #define GDT_DATA_0_SEL (GDT_IDX_DATA_0 << 3) | 0x00
@@ -92,14 +90,13 @@ VIRT_PAGE_TABLE(X)  devuelve la page table entry correspondiente, donde X es una
 VIRT_PAGE_DIR(X)    devuelve el page directory entry, donde X es una dirección virtual
 CR3_TO_PAGE_DIR(X)  devuelve el page directory, donde X es el contenido del registro CR3
 MMU_ENTRY_PADDR(X)  devuelve la dirección física de la base de un page frame o de un page table, donde X es el campo de 20 bits en una PTE o PDE
-
-#define VIRT_PAGE_OFFSET(X) ??
-#define VIRT_PAGE_TABLE(X)  ??
-#define VIRT_PAGE_DIR(X)    ??
-#define CR3_TO_PAGE_DIR(X)  ??
-#define MMU_ENTRY_PADDR(X)  ??
-
 */
+#define VIRT_PAGE_OFFSET(X) (uint16_t)(X & 0xFFF)
+#define VIRT_PAGE_TABLE(X)  (uint16_t)((X >> 12) & 0x3FF)
+#define VIRT_PAGE_DIR(X)    (uint16_t)((X >> 22) & 0x3FF)
+#define CR3_TO_PAGE_DIR(X)  (uint32_t)(X & 0xFFFFF000)
+#define MMU_ENTRY_PADDR(X)  (uint32_t)(X & 0xFFFFF000)
+
 
 #define MMU_P (1 << 0)
 #define MMU_W (1 << 1)
