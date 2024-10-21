@@ -18,6 +18,7 @@ extern pic_reset
 extern pic_enable
 extern pic_change_freq
 extern mmu_init_kernel_dir
+extern copy_page
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
@@ -26,6 +27,7 @@ extern mmu_init_kernel_dir
 %define C_BG_MAGENTA    (0x5 << 4)
 %define C_FG_MAGENTA       (0x5)
 %define C_FG_LIGHT_RED (0x0C)
+%define PAGE_SIZE (4096)
 
 
 
@@ -121,8 +123,12 @@ modo_protegido:
     
     ; habilitar interrupciones
     sti
-
     int 88
+
+    push (0x0)
+    push (0x10000)
+    call copy_page
+    ; funciona!!! copia bien :
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF

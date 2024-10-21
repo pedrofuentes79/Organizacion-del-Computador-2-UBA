@@ -88,14 +88,13 @@ paddr_t mmu_init_kernel_dir(void) {
   // ponemos kpt[0] porque la direccion de memoria de la tabla de paginas es la su primer entrada
   // shifteo 12 bits para que quede con offset = 0,
   // ya que los primeros 20 bits son la direccion y el resto atributos
-  kpd[0].pt = MMU_ENTRY_PADDR((uint32_t)&kpt[0]) >> 12;
+  kpd[0].pt = ((uint32_t)&kpt[0]) >> 12;
   kpd[0].attrs = MMU_P | MMU_W; // present y writable (le tengo que mapear cosas, asi que lo tengo que escribir)
 
   // identity mapping
   paddr_t current_page = 0;
   uint32_t i = 0;
   while (current_page <= identity_mapping_end){
-    zero_page(current_page);
     kpt[i].page = current_page >> 12; // guardo el page frame
     kpt[i].attrs = MMU_P | MMU_W;     // present y writable
 
@@ -119,6 +118,18 @@ void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
 
   pd_entry_t* pd = (pd_entry_t*)CR3_TO_PAGE_DIR(cr3);
   uint32_t pd_index = VIRT_PAGE_DIR(virt);
+
+  // si la tabla de paginas no esta presente, la tengo que crear
+  if (!(pd[pd_index].attrs & MMU_P)) {
+    // tengo que buscar una pagina libre para la tabla de paginas
+    paddr_t new_table = mmu_next_free_kernel_page();
+    pd[pd_index].pt = new_table >> 12;
+    pd[pd_index].attrs = MMU_P | MMU_W; // present y writable
+    zero_page(new_table);
+  }
+  
+
+
   pt_entry_t* pt = (pt_entry_t*)MMU_ENTRY_PADDR(pd[pd_index].pt);  
   uint32_t pt_index = VIRT_PAGE_TABLE(virt);
 
@@ -142,6 +153,7 @@ paddr_t mmu_unmap_page(uint32_t cr3, vaddr_t virt) {
 
   // chequeo si esta presente
   if (!(pt[pt_index].attrs & MMU_P)) {
+    // setearla en 0?
     return 0;
   }
 
@@ -172,6 +184,7 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
   mmu_map_page(rcr3(), DST_VIRT_PAGE, dst_addr, MMU_P | MMU_W);
   mmu_map_page(rcr3(), SRC_VIRT_PAGE, src_addr, MMU_P | MMU_W);
 
+
   // obtengo los punteros a cada una
   uint8_t* src = (uint8_t*)SRC_VIRT_PAGE;
   uint8_t* dst = (uint8_t*)DST_VIRT_PAGE;
@@ -182,8 +195,8 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
   }
 
   // las desmapeo de estas direcciones virtuales auxiliares
-  mmu_unmap_page(rcr3(), DST_VIRT_PAGE);
-  mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
+  // mmu_unmap_page(rcr3(), DST_VIRT_PAGE);
+  // mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
 }
 
 // /**
