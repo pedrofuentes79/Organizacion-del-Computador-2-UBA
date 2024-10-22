@@ -199,18 +199,51 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
   // mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
 }
 
-// /**
-//  * mmu_init_task_dir inicializa las estructuras de paginación vinculadas a una tarea cuyo código se encuentra en la dirección phy_start
-//  * @param phy_start es la dirección donde comienzan las dos páginas de código de la tarea asociada a esta llamada
-//  * @return el contenido que se ha de cargar en un registro CR3 para la tarea asociada a esta llamada
-//  */
-// paddr_t mmu_init_task_dir(paddr_t phy_start) {
-// }
+/**
+ * mmu_init_task_dir inicializa las estructuras de paginación vinculadas a una tarea cuyo código se encuentra en la dirección phy_start
+ * @param phy_start es la dirección donde comienzan las dos páginas de código de la tarea asociada a esta llamada
+ * @return el contenido que se ha de cargar en un registro CR3 para la tarea asociada a esta llamada
+ */
+paddr_t mmu_init_task_dir(paddr_t phy_start) {
+  // 0. Inicializar estructuras de paginacion
+  // 1. Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
+  // 2. Mapear la pagina de stack como lectura/escritura (a partir de 0x08003000)
+  // 3. Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
 
-// // COMPLETAR: devuelve true si se atendió el page fault y puede continuar la ejecución 
-// // y false si no se pudo atender
-// bool page_fault_handler(vaddr_t virt) {
-//   print("Atendiendo page fault...", 0, 0, C_FG_WHITE | C_BG_BLACK);
-//   // Chequeemos si el acceso fue dentro del area on-demand
-//   // En caso de que si, mapear la pagina
-// }
+  // 0
+  pd_entry_t* tpd = (pd_entry_t*)mmu_next_free_kernel_page();
+  pt_entry_t* tpt = (pt_entry_t*)mmu_next_free_kernel_page();
+  zero_page((paddr_t)tpd);
+  zero_page((paddr_t)tpt);
+  
+  // 1
+  mmu_map_page(rcr3(), TASK_CODE_VIRTUAL, phy_start, MMU_P);
+  mmu_map_page(rcr3(), TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P);
+
+  // 2
+  mmu_map_page(rcr3(), TASK_STACK_BASE, mmu_next_free_user_page(), MMU_P | MMU_W);  
+
+  // 3
+  mmu_map_page(rcr3(), TASK_STACK_BASE + PAGE_SIZE, mmu_next_free_user_page(), MMU_P | MMU_W);
+
+  return (paddr_t)tpd;
+}
+
+// COMPLETAR: devuelve true si se atendió el page fault y puede continuar la ejecución 
+// y false si no se pudo atender
+bool page_fault_handler(vaddr_t virt) {
+  print("Atendiendo page fault...", 0, 0, C_FG_WHITE | C_BG_BLACK);
+  // Chequeemos si el acceso fue dentro del area on-demand
+  // En caso de que si, mapear la pagina
+
+  if (virt >= ON_DEMAND_MEM_START_VIRTUAL && virt < ON_DEMAND_MEM_END_VIRTUAL){
+    // el acceso es valido
+    mmu_map_page(rcr3(), virt, mmu_next_free_user_page(), MMU_P);
+    return true;
+  }
+  else {
+    print("ERROR: ACCESO FUERA DE RANGO", 0, 0, C_FG_WHITE | C_BG_BLACK);
+    return false;
+  }
+
+}
