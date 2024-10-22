@@ -205,25 +205,22 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
  * @return el contenido que se ha de cargar en un registro CR3 para la tarea asociada a esta llamada
  */
 paddr_t mmu_init_task_dir(paddr_t phy_start) {
-  // 0. Inicializar estructuras de paginacion
-  // 1. Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
-  // 2. Mapear la pagina de stack como lectura/escritura (a partir de 0x08003000)
-  // 3. Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
-
-  // 0
-  pd_entry_t* tpd = (pd_entry_t*)mmu_next_free_kernel_page();
-  pt_entry_t* tpt = (pt_entry_t*)mmu_next_free_kernel_page();
-  zero_page((paddr_t)tpd);
-  zero_page((paddr_t)tpt);
+  // Inicializar estructuras de paginacion
+  pd_entry_t* tpd = (pd_entry_t*)mmu_next_free_user_page(); // de user, no de kernel
+  pt_entry_t* tpt = (pt_entry_t*)mmu_next_free_user_page();
+  tpt = tpt + 2;
+  // ACA TIRA PAGE FAULT
+  // zero_page((paddr_t)tpd);
+  // zero_page((paddr_t)tpt);
   
-  // 1
+  // Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
   mmu_map_page(rcr3(), TASK_CODE_VIRTUAL, phy_start, MMU_P);
   mmu_map_page(rcr3(), TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P);
 
-  // 2
+  // Mapear la pagina de stack como lectura/escritura (a partir de 0x08003000)
   mmu_map_page(rcr3(), TASK_STACK_BASE, mmu_next_free_user_page(), MMU_P | MMU_W);  
 
-  // 3
+  // Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
   mmu_map_page(rcr3(), TASK_STACK_BASE + PAGE_SIZE, mmu_next_free_user_page(), MMU_P | MMU_W);
 
   return (paddr_t)tpd;
@@ -238,7 +235,8 @@ bool page_fault_handler(vaddr_t virt) {
 
   if (virt >= ON_DEMAND_MEM_START_VIRTUAL && virt < ON_DEMAND_MEM_END_VIRTUAL){
     // el acceso es valido
-    mmu_map_page(rcr3(), virt, mmu_next_free_user_page(), MMU_P);
+    // mapeo con r/w, user-level
+    mmu_map_page(rcr3(), virt, mmu_next_free_user_page(), MMU_P | MMU_W);
     return true;
   }
   else {

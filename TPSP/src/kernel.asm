@@ -18,6 +18,7 @@ extern pic_reset
 extern pic_enable
 extern pic_change_freq
 extern mmu_init_kernel_dir
+extern mmu_init_task_dir
 extern copy_page
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
@@ -125,10 +126,19 @@ modo_protegido:
     sti
     int 88
 
+    ; TEST COPY PAGE
     push (0x0)
     push (0x10000)
     call copy_page
-    ; funciona!!! copia bien :
+
+    push 0x18000
+    call mmu_init_task_dir ; en eax tengo tpd
+
+    ; armo el cr3 para la nueva tarea
+
+
+
+
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
