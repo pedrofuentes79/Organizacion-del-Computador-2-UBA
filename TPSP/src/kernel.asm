@@ -78,9 +78,18 @@ modo_protegido:
     ; Cargar directorio de paginas
 
     ; Habilitar paginacion
+
+    ; Inicializar tss
+
+    ; Inicializar el scheduler
+
+    ; Inicializar las tareas
+
     ; COMPLETAR - Inicializar y cargar la IDT
 
     ; COMPLETAR - Reiniciar y habilitar el controlador de interrupciones
+
+    ; Cargar tarea inicial
 
     ; COMPLETAR - Habilitar interrupciones
     ; NOTA: Pueden chequear que las interrupciones funcionen forzando a que se
@@ -95,6 +104,8 @@ modo_protegido:
     ; Inicializar el directorio de paginas de la tarea de prueba
     ; Cargar directorio de paginas de la tarea
     ; Restaurar directorio de paginas del kernel
+
+    ; Saltar a la primera tarea: Idle
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF
