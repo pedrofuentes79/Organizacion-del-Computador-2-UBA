@@ -125,9 +125,9 @@ _isr14:
     mov eax, cr2
     push eax
     call page_fault_handler
-    add esp, 4
+    add esp, 4 ; saca el eax de la pila
     popad
-    add esp, 4
+    add esp, 4 ; saca el error code de la pila
     iret
 
 
