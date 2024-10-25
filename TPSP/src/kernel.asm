@@ -20,6 +20,7 @@ extern pic_change_freq
 extern mmu_init_kernel_dir
 extern mmu_init_task_dir
 extern copy_page
+extern page_fault_handler
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
@@ -133,10 +134,10 @@ modo_protegido:
 
     push 0x18000
     call mmu_init_task_dir ; en eax tengo tpd
+    and eax, 0xFFFFF000
+    mov cr3, eax
 
-    ; armo el cr3 para la nueva tarea
-
-
+    mov dword [0x07000000], 0x8
 
 
 
