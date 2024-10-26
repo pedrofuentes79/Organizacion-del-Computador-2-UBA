@@ -9,27 +9,19 @@ global start
 
 
 ; COMPLETAR - Agreguen declaraciones extern según vayan necesitando
-extern GDT_DESC
-extern IDT_DESC
-extern idt_init
-extern screen_draw_layout
-extern screen_draw_box
-extern pic_reset
-extern pic_enable
-extern pic_change_freq
-extern mmu_init_kernel_dir
-extern mmu_init_task_dir
-extern copy_page
-extern page_fault_handler
+extern GDT_DESC, IDT_DESC, idt_init, screen_draw_layout, screen_draw_box
+extern pic_reset, pic_enable, pic_change_freq
+extern mmu_init_kernel_dir, mmu_init_task_dir, copy_page, page_fault_handler
+extern tss_init, tasks_screen_draw
 
 ; COMPLETAR - Definan correctamente estas constantes cuando las necesiten
 %define CS_RING_0_SEL 8
 %define DS_RING_0_SEL 24
 %define C_FG_LIGHT_CYAN (0x0B)
-%define C_BG_MAGENTA    (0x5 << 4)
-%define C_FG_MAGENTA       (0x5)
-%define C_FG_LIGHT_RED (0x0C)
-%define PAGE_SIZE (4096)
+%define GDT_TASK_INITIAL_SEL (11 << 3)
+%define GDT_TASK_IDLE_SEL (12 << 3)
+
+
 
 
 
@@ -122,24 +114,34 @@ modo_protegido:
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
+
+
+    ; init tss
+    call tss_init
     
+    call tasks_screen_draw
+
+    ; init scheduler
+
+    ; init tareas
+    ; init idt
+    ; reiniciar y habilitar el controlador de interrupciones
+    ; cargar tarea inicial 
+    mov ax, GDT_TASK_INITIAL_SEL
+    ltr ax
+    
+    jmp GDT_TASK_IDLE_SEL:0
+
+
     ; habilitar interrupciones
     sti
     int 88
 
-    ; TEST COPY PAGE
-    push (0x0)
-    push (0x10000)
-    call copy_page
+    ; init directorio de paginas de la tarea de prueba
+    ; cargar directorio de paginas de tarea
+    ; restaurar directorio de paginas del kernel
 
-    push 0x18000
-    call mmu_init_task_dir ; en eax tengo tpd
-    and eax, 0xFFFFF000
-    mov cr3, eax
-
-    mov dword [0x07000000], 0x8
-
-
+    ; saltar a idle
 
     ; Ciclar infinitamente 
     mov eax, 0xFFFF

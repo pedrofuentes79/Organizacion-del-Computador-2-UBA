@@ -144,7 +144,7 @@ _isr14:
     mov eax, cr2
     push eax
     call page_fault_handler
-    add esp, 4 ; saca el eax de la pila
+    add esp, 4 ; saca lo que le habiamos pasado por pila
     cmp eax, 0
     je .ring0_exception
     jmp .fin

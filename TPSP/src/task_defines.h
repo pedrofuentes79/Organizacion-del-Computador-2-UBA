@@ -4,6 +4,8 @@
 /* GDT */
 #define GDT_IDX_TASK_INITIAL         11
 #define GDT_IDX_TASK_IDLE            12
+#define GDT_TASK_INITIAL_SEL (GDT_IDX_TASK_INITIAL << 3)
+#define GDT_TASK_IDLE_SEL    (GDT_IDX_TASK_IDLE << 3)
 
 #define GDT_TASK_A_SEL (GDT_IDX_TASK_A_START << 3)
 #define GDT_TASK_B_SEL (GDT_IDX_TASK_B_START << 3)
@@ -27,6 +29,8 @@
 
 #define MAX_TASKS     (2 * 2)
 #define GDT_TSS_START 13
+
+#define DESC_TYPE_32BIT_TSS 0x9 // (1001). le ponemos busy en 0, total lo activa el hardware cuando cambia a esa tarea
 
 /* Interfaz gráfica del sistema */
 /* -------------------------------------------------------------------------- */

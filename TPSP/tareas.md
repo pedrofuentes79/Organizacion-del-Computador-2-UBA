@@ -72,10 +72,21 @@ nuevas estructuras, cantidad de nuevas entradas en las estructuras ya
 definidas, y registros tenemos que configurar?¿Qué formato tienen?
 ¿Dónde se encuentran almacenadas?
 
+- Tenemos que agregar dos entradas que tengan un descriptor TSS en la GDT. Los TSS (task segment selectors) son los que indican el estado de la tarea (la *foto* del procesador en ese momento), existe uno de estos por cada tarea.
+- Para acceder al TSS se usa el TR (Task Register). En este registro se guarda el selector en la GDT donde esta el TSS Descriptor.
+    - Ademas, tiene una parte "invisible", que cachea la base address y el segment limit de ese selector, para evitar tener que ir a buscarlo a la gdt de vuelta.
+        - Este procedimiento lo hace el procesador de manera automatica.
+
+
 **2.** ¿A qué llamamos cambio de contexto? ¿Cuándo se produce? ¿Qué efecto
 tiene sobre los registros del procesador? Expliquen en sus palabras que
 almacena el registro **TR** y cómo obtiene la información necesaria para
 ejecutar una tarea después de un cambio de contexto.
+
+- Llamamos cambio de contexto a cambiar de una tarea a otra. Este cambio de tareas sucede cuando se hace el jmp far hacia la tarea.
+- El efecto que tiene sobre los registros del procesador es que se guardan los valores de los registros en la TSS de la tarea que se esta ejecutando (la *foto* que guarda), y se cargan los valores de los registros de la TSS de la tarea a la que se va a saltar (la *foto* que se carga). El estado nuevo que se carga es el de la nueva tarea, que se indica mediante el jmp far.
+
+- El registro TR guarda el selector de segmento de la GDT que contiene el TSS descriptor de la tarea actual. Para ejecutar la tarea luego del cambio de contexto, cuando cargue la *foto* de la tarea, el procesador ya va a tener la informacion necesaria para ejecutar la tarea, es decir, va a tener seteada la pila de su tarea, va a tener el instruction pointer donde lo dejo la ultima vez, al igual que los registros de segmento y de proposito general.
 
 **3.** Al momento de realizar un cambio de contexto el procesador va
 almacenar el estado actual de acuerdo al selector indicado en el
@@ -84,17 +95,26 @@ selector se asigna en el *jmp* far. ¿Qué consideraciones deberíamos
 tener para poder realizar el primer cambio de contexto? ¿Y cuáles cuando
 no tenemos tareas que ejecutar o se encuentran todas suspendidas?
 
+- Para realizar el primer cambio de contexto, necesitamos tener la "tarea inicial", una tarea que solo sirve para que el procesador este ejecutando alguna tarea. Tenemos que cargar el TR con el selector de la GDT que contiene el TSS descriptor de la tarea inicial.
+Luego, tenemos que pasar a la tarea idle, que es la tarea que se ejecuta cuando no hay tareas para ejecutar. Esta tarea es importante ya que siempre queremos que el procesador este ejecutando alguna tarea.  Pasamos a esta tarea con el jmp far a la tarea idle, a la cual le tenemos que definir su selector de segmento en la GDT.
+
 **4.** ¿Qué hace el scheduler de un Sistema Operativo? ¿A qué nos
 referimos con que usa una política?
 
+- El scheduler de un SO es el software que decide cual es la siguiente tarea a ejecutar.
+- La politica que usa es solamente la manera que tiene ese software de determinar cual es la proxima tarea que se ejecuta. En nuestro caso era una politica "round robin", es decir que va una por una, pero la politica podria ser distinta, manteniendo una jerarquia de prioridades entre tareas.
+
 **5.** En un sistema de una única CPU, ¿cómo se hace para que los
 programas parezcan ejecutarse en simultáneo?
+- Lo que se hace para que parezca que los programas se ejecuten en simultaneo es justamente cambiar de tareas. El cambio de tarea es tan rapido que no es perceptible para el usuario, y parece que las tareas se ejecutan en simultaneo, cuando en realidad se ejecutan una por una.
 
 **6.** En **tss.c** se encuentran definidas las TSSs de la Tarea
 **Inicial** e **Idle**. Ahora, vamos a agregar el *TSS Descriptor*
 correspondiente a estas tareas en la **GDT**.
     
 a) Observen qué hace el método: ***tss_gdt_entry_for_task***
+
+- dada una direccion de memoria de una tss, devuelve un descriptor de la gdt que apunta a esa tss.
 
 b) Escriban el código del método ***tss_init*** de **tss.c** que
 agrega dos nuevas entradas a la **GDT** correspondientes al
@@ -132,6 +152,8 @@ Idle.
 También, verifiquen los valores de los registros **CR3** con **creg** y de los registros de segmento **CS,** **DS**, **SS** con
 ***sreg***. ¿Por qué hace falta tener definida la pila de nivel 0 en la
 tss?
+
+- Hace falta tener definida la pila de nivel 0 en la tss para que el procesador pueda guardar el contexto cuando se produce un cambio de privilegios. Si tenemos una tarea de nivel 3 y se produce la interrupcion de reloj. Luego, cambia el nivel de ejecucion. Por eso, usa el stack de nivel 0 que esta en la tss para guardar la informacion de retorno a la tarea.
 
 **10.** En **tss.c**, completar la función ***tss_create_user_task***
 para que inicialice una TSS con los datos correspondientes a una tarea
