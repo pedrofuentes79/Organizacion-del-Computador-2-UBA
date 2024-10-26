@@ -80,6 +80,8 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 #define KERNEL 0x00001200
 // direccion fisica del buffer de video
 #define VIDEO 0x000B8000
+// direccion fisica de la pagina de memoria compartida
+#define SHARED 0x0001D000
 
 
 /* MMU */
