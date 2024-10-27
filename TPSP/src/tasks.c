@@ -40,6 +40,7 @@ static paddr_t task_code_start[2] = {
  */
 static int8_t create_task(tipo_e tipo) {
   size_t gdt_id;
+  // itera hasta encontrar una entrada libre en la GDT
   for (gdt_id = GDT_TSS_START; gdt_id < GDT_COUNT; gdt_id++) {
     if (gdt[gdt_id].p == 0) {
       break;

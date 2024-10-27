@@ -201,14 +201,36 @@ _isr32:
 a)  Expliquen con sus palabras que se estaría ejecutando en cada tic
     del reloj línea por línea
 
+- pushad: se guarda el estado de los registros de proposito general en la pila de nivel 0 de la tarea actual. Se usa la de nivel 0 porque estamos en una interrupcion de reloj.
+
+- call pic_finish1: se avisa al pic que se termino de atender la interrupcion.
+
+- call sched_next_task: se llama al scheduler para que devuelva el segment selector de la proxima tarea a ejecutar.
+
+- str cx: se guarda el TR en cx, es decir, el segment selector de la tarea actual.
+
+- cmp ax, cx: se compara el segment selector de la tarea actual con el segment selector de la proxima tarea a ejecutar.
+
+- je .fin: si son los mismos, no se cambia de tarea y se salta a .fin.
+
+    - en .fin se restauran los registros de proposito general (que estaban en la pila de nivel 0) y se retorna de la interrupcion, volviendo a ejecutar la tarea.
+
+- mov word [sched_task_selector], ax: se guarda el segment selector de la proxima tarea a ejecutar en sched_task_selector.
+- jmp far [sched_task_offset]: se salta a la proxima tarea a ejecutar, usando el segment selector de la proxima tarea.\
+    - Aca se produce el context switch, que guarda el estado de la tarea actual en la TSS, cambia el TR por el segment selector de la proxima tarea, y carga el estado de la proxima tarea de su TSS correspondiente.
+    - Cuando se vuelva a ejecutar esta tarea, el EIP habra quedado apuntando a .fin, entonces cuando se vuelva a ejecutar, se restauran los registros de proposito general, que nos dicen donde estaba la tarea antes de que se produzca la interrupcion de reloj. Luego, con el iret se vuelve a ejecutar la tarea.
+
 b)  En la línea que dice ***jmp far \[sched_task_offset\]*** ¿De que
     tamaño es el dato que estaría leyendo desde la memoria? ¿Qué
     indica cada uno de estos valores? ¿Tiene algún efecto el offset
     elegido?
 
+- El selector es de 2 bytes (16 bits) y el offset es de 4 bytes (32 bits). En este tipo de jmp far, el offset es ignorado, ya que no lo necesita para determinar a donde saltar, se lo dice la TSS. De todas maneras, el offset tiene que estar ahi para que la instruccion sea valida.
+
 c)  ¿A dónde regresa la ejecución (***eip***) de una tarea cuando
     vuelve a ser puesta en ejecución?
 
+- Si la tarea ya se ejecuto alguna vez y vuelve a ejecutarse de vuelta, va a volver a .fin, ya que ahi es donde quedo apuntando el eip. Ahi va a restaurar sus registros de proposito general para poder volver al codigo propio de la tarea con el iret.
 
 
 **12.** Para este Taller la cátedra ha creado un scheduler que devuelve
@@ -218,6 +240,8 @@ a)  En los archivos **sched.c** y **sched.h** se encuentran definidos
     los métodos necesarios para el Scheduler. Expliquen cómo funciona
     el mismo, es decir, cómo decide cuál es la próxima tarea a
     ejecutar. Pueden encontrarlo en la función ***sched_next_task***.
+
+- El scheduler itera sobre las tasks que hay en `sched_tasks`, empezando sobre la actual, y da toda la vuelta hasta encontrar alguna (que no sea la actual), que este disponible para ejecucion. Si no encuentra ninguna, devuelve la `idle`. Si encuentra alguna, setea la actual a esa y devuelve el segment selector de esa tarea (lo tiene en `sched_tasks`).
 
 b)  Modifiquen **kernel.asm** para llamar a la función
     ***sched_init*** luego de iniciar la TSS
@@ -240,8 +264,12 @@ gdt[gdt_id] = tss_gdt_entry_for_task(&tss_tasks[task_id]);
 ```
 a)  ¿Qué está haciendo la función ***tss_gdt_entry_for_task***?
 
+- Dado el tss, genera su entrada en la gdt. El task_id es el selector de segmento que se va a guardar en el TR, entonces, tenemos que guardar en la GDT la entrada que le corresponde a ese selector de segmento.
+
 b)  ¿Por qué motivo se realiza el desplazamiento a izquierda de
     **gdt_id** al pasarlo como parámetro de ***sched_add_task***?
+
+- Porque gdt_id es el indice en la gdt, y sched_add_task recibe el selector de segmento, que tiene 3 bits al principio que le indican el TI (table indicator) y el RPL, ambos 0.
 
 **15.** Ejecuten las tareas en *qemu* y observen el código de estas
 superficialmente.

@@ -129,7 +129,7 @@ void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
   }
   pd[pd_index].attrs |= attrs;
   
-  // deberia chequear si ya esta presente (igual a lo de arriba)
+  // deberia chequear si la pagina ya esta presente?
   pt_entry_t* pt = (pt_entry_t*)MMU_ENTRY_PADDR(pd[pd_index].pt);  
   uint32_t pt_index = VIRT_PAGE_TABLE(virt);
 
@@ -206,8 +206,8 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
  */
 paddr_t mmu_init_task_dir(paddr_t phy_start) {
   // Inicializar estructuras de paginacion
+  // tiene que ser de kernel, por ser una estructura de paginacion
   pd_entry_t* tpd = (pd_entry_t*)mmu_next_free_kernel_page();
-
   zero_page((paddr_t)tpd);
 
   // seteo la primer entrada de tpd como el puntero a kpt (asi tiene id mapping)
@@ -215,13 +215,16 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
   tpd[0].attrs = MMU_P | MMU_W;
 
   // Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
-  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL, phy_start, MMU_P);
-  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P);
+  // va con MMU_U?
+  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL, phy_start, MMU_P | MMU_U);
+  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P | MMU_U);
 
   // Mapear la pagina de stack como lectura/escritura (a partir de 0x08003000)
-  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, mmu_next_free_kernel_page(), MMU_P | MMU_W);  
+  // es de usuario por el esquema de memoria de la consigna
+  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, mmu_next_free_user_page(), MMU_P | MMU_W);  
 
   // Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
+  // es de kernel por el esquema de memoria de la consigna
   mmu_map_page((uint32_t)tpd, TASK_STACK_BASE + PAGE_SIZE, mmu_next_free_kernel_page(), MMU_P | MMU_W);
 
   return (paddr_t)tpd;

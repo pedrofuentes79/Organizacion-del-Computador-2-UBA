@@ -35,7 +35,7 @@ typedef struct {
 static sched_entry_t sched_tasks[MAX_TASKS] = {0};
 
 /**
- * Tarea actualmente en ejecución (excepto que esté pasuada, en cuyo caso se
+ * Tarea actualmente en ejecución (excepto que esté pausada, en cuyo caso se
  * corre la idle).
  */
 int8_t current_task = 0;
@@ -118,5 +118,5 @@ uint16_t sched_next_task(void) {
 
   // En el peor de los casos no hay ninguna tarea viva. Usemos la idle como
   // selector.
-  return GDT_IDX_TASK_IDLE << 3;
+  return GDT_TASK_IDLE_SEL;
 }

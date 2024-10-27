@@ -109,7 +109,7 @@ MMU_ENTRY_PADDR(X)  devuelve la dirección física de la base de un page frame o
 // direccion virtual del codigo
 #define TASK_CODE_VIRTUAL 0x08000000
 #define TASK_CODE_PAGES   2
-#define TASK_STACK_BASE   0x08003000
+#define TASK_STACK_BASE   0x08003000 // apunta al final de la pagina porque es un stack! crece desde abajo
 #define TASK_SHARED_PAGE  0x08003000
 
 // direccion virtual de memoria compartida on demand
