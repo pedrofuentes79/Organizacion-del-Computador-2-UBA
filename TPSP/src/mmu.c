@@ -210,7 +210,7 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
 
   zero_page((paddr_t)tpd);
 
-  // seteo la primer entrada de tpd como el puntero a tpt
+  // seteo la primer entrada de tpd como el puntero a kpt (asi tiene id mapping)
   tpd[0].pt = ((uint32_t)kpt) >> 12;
   tpd[0].attrs = MMU_P | MMU_W;
 

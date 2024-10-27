@@ -67,10 +67,19 @@ tss_t tss_create_user_task(paddr_t code_start) {
   vaddr_t stack = ??;
   //COMPLETAR: dir. virtual de comienzo del codigo
   vaddr_t code_virt = ??;
+  
+  
   //COMPLETAR: pedir pagina de kernel para la pila de nivel cero
-  vaddr_t stack0 = ??;
+  // la mapeo con id 
+
+  // ni hace falta mapearla (ya que en init task dir se inicializa la tpd con la kpt que tiene id mapping)
+  // mmu_map_page(cr3, phys_stack, phys_stack, MMU_P | MMU_W);
+  vaddr_t stack0 = (vaddr_t) mmu_next_free_kernel_page();
+  
+  
   //COMPLETAR: a donde deberia apuntar la pila de nivel cero?
-  vaddr_t esp0 = stack0 + ??;
+  // esto es porque la pila crece hacia abajo 
+  vaddr_t esp0 = stack0 + PAGE_SIZE;
   return (tss_t) {
     .cr3 = cr3,
     .esp = stack,
