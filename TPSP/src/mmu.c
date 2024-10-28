@@ -216,16 +216,17 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
 
   // Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
   // va con MMU_U?
-  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL, phy_start, MMU_P | MMU_U);
-  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P | MMU_U);
+  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL, phy_start, MMU_P);
+  mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P);
 
   // Mapear la pagina de stack como lectura/escritura (a partir de 0x08003000)
   // es de usuario por el esquema de memoria de la consigna
-  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, mmu_next_free_user_page(), MMU_P | MMU_W);  
+  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE - PAGE_SIZE, mmu_next_free_user_page(), MMU_P | MMU_W);  
 
   // Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
   // es de kernel por el esquema de memoria de la consigna
-  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE + PAGE_SIZE, mmu_next_free_kernel_page(), MMU_P | MMU_W);
+  // tiene MMU_U?
+  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, mmu_next_free_kernel_page(), MMU_P | MMU_W);
 
   return (paddr_t)tpd;
 }
