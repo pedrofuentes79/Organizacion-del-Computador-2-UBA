@@ -44,7 +44,8 @@ gdt_entry_t tss_gdt_entry_for_task(tss_t* tss) {
     .base_31_24 = GDT_BASE_HIGH(tss),
     .p = 1,
     .type = DESC_TYPE_32BIT_TSS,
-    .dpl = 0x0,
+    .s = DESC_SYSTEM,
+    .dpl = 0,
   };
 }
 

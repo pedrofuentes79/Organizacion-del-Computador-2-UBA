@@ -223,10 +223,6 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
   mmu_map_page((uint32_t)tpd, TASK_STACK_BASE - PAGE_SIZE, mmu_next_free_user_page(), MMU_P | MMU_W | MMU_U);  
 
   // Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
-  // es de kernel por el esquema de memoria de la consigna
-  // tiene MMU_U?
-  // ---------------------------------------
-  // DUDA:lo estamos poniendo como una pagina de kernel cualquiera, pero deberia ser una en especifico, no?
   mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, 0x28000, MMU_P | MMU_W | MMU_U);
 
   return (paddr_t)tpd;

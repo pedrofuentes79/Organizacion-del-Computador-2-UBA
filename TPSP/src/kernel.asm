@@ -134,7 +134,6 @@ modo_protegido:
     ltr ax
 
     ; habilitar interrupciones
-    sti
 
     ; init directorio de paginas de la tarea de prueba
     ; cargar directorio de paginas de tarea
