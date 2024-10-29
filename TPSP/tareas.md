@@ -276,8 +276,12 @@ superficialmente.
 
 a) ¿Qué mecanismos usan para comunicarse con el kernel?
 
+- Observamos que la manera de interactuar es con syscall. Ejemplo en la de GameOfLife usan int 88.
+
 b) ¿Por qué creen que no hay uso de variables globales? ¿Qué pasaría si
     una tarea intentase escribir en su `.data` con nuestro sistema?
+
+- 
 
 c) Cambien el divisor del PIT para \"acelerar\" la ejecución de las tareas:
 ```
