@@ -12,7 +12,7 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 /* Misc */
 /* -------------------------------------------------------------------------- */
 
-#define SIZE_N 40
+#define SIZE_N 50
 #define ROWS SIZE_N
 #define SIZE_M 80
 #define COLS SIZE_M
@@ -66,7 +66,7 @@ TALLER System Programming - Arquitectura y Organizacion de Computadoras - FCEN
 
 /* COMPLETAR - Tamaños de segmentos */ 
 // 209152 B = 817 MiB / 4 KiB
-#define FLAT_SEGM_SIZE 209152
+#define FLAT_SEGM_SIZE 817*1024*1024
 // el * 2 es porque cada celda de la pantalla son 2 bytes
 #define VIDEO_SEGM_SIZE (ROWS * COLS * 2)
 
