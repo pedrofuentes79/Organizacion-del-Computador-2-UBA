@@ -333,6 +333,9 @@ tarea S*nake* por una tarea *PongScoreboard*.
 esta tarea el puntaje que queremos imprimir? ¿Cómo funciona el mecanismo
 propuesto para compartir datos entre tareas?
 
+- Escribe en la posicion que asignamos como memoria compartida entre tareas (es la que, inicialmente, ninguna tarea tiene mapeada, pero si la quieren acceder y eso levanta un page fault, la mapea para esa tarea). Esta posicion se llama (en `taskPong.c`) `SHARED_SCORE_BASE_VADDR`.
+- El mecanismo para compartir datos entre tareas es que, todas las tareas van a usar esa misma pagina, pero cada una va a usar un rango propio para cada tarea, que se calcula con el `task_id`. De ese modo, ninguna tarea va a pisar el score de la otra. Asi, todas las tareas pueden acceder a la misma pagina de memoria compartida, pero cada una tiene su propio espacio en esa pagina.
+
 #### Programando:
 
 **20.** Completen el código de la tarea *PongScoreboard* para que
