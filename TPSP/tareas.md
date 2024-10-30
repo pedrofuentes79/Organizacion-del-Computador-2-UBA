@@ -308,8 +308,10 @@ c) Cambien el divisor del PIT para \"acelerar\" la ejecución de las tareas:
 se ubica al principio de las tareas.
 
 a. ¿Por qué la tarea termina en un loop infinito?
+- Esto es para que ninguna tarea pueda terminar, que siempre siga viva. Nuestro kernel no soporta la terminacion de tareas.
 
 b. \[Opcional\] ¿Qué podríamos hacer para que esto no sea necesario?
+- Se podrian implementar algunas syscalls para que el kernel maneje la situacion. Se podria, por ejemplo, implementar una syscall que directamente pase a la siguiente tarea y marque la actual como no disponible, haciendo que esta tarea no se ejecute mas
 
 ### Cuarta parte: Hacer nuestra propia tarea
 
@@ -323,6 +325,9 @@ taller anterior.
 **18.** Analicen el *Makefile* provisto. ¿Por qué se definen 2 "tipos"
 de tareas? ¿Como harían para ejecutar una tarea distinta? Cambien la
 tarea S*nake* por una tarea *PongScoreboard*.
+
+- Se definen dos tipos de tareas porque hay varias que son "una instancia" de Snake / Pong. Es decir, hay 3 tareas que estan corriendo el juego Pong y una corriendo el juego snake. Entonces, para poder diferenciarlas, se les asigna un tipo distinto.
+- Para ejecutar una tarea distinta, podriamos intercambiarles los tipos. De todos modos, el hecho de que haya 3 instancias de la tarea A y una instancia de la tarea B se define en `tasks_init()`. Si queremos reemplazar todas las tareas snake por tareas PongScoreboard, con cambiar el tipo en el Makefile alcanza.
 
 **19.** Mirando la tarea *Pong*, ¿En que posición de memoria escribe
 esta tarea el puntaje que queremos imprimir? ¿Cómo funciona el mecanismo
