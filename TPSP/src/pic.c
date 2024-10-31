@@ -64,7 +64,7 @@ void pic_change_freq(){
   outb(TIMER_TICK_CONTROL, 0x36); 
 
   uint32_t base_divisor = 1 << 16;      // 65536
-  uint16_t divisor = base_divisor / 2;  // 32768
+  uint16_t divisor = base_divisor / 16;  // 32768
   outb(TIMER_TICK_CHANNEL0, divisor & 0xFF); // envio los bytes menos significativos del divisor
   outb(TIMER_TICK_CHANNEL0, divisor >> 8); // envio los bytes mas significativos del divisor
 

@@ -104,7 +104,7 @@ modo_protegido:
 
     ; cambiar frecuencia del clock
     call pic_change_freq
-    
+
     ; INICIO KPD
     call mmu_init_kernel_dir
     and eax, 0xFFFFF000 ; los primeros 20 bits nada mas, resto en 0
@@ -114,6 +114,10 @@ modo_protegido:
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
+
+    push 0x0
+    push 0x10000
+    call copy_page
 
 
     ; init tss

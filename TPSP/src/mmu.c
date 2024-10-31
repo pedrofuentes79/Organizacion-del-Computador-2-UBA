@@ -183,8 +183,6 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
   mmu_map_page(rcr3(), DST_VIRT_PAGE, dst_addr, MMU_P | MMU_W);
   mmu_map_page(rcr3(), SRC_VIRT_PAGE, src_addr, MMU_P | MMU_W);
 
-  kpd[0].pt = ((uint32_t)&kpt[0]) >> 12;
-  kpd[0].attrs = MMU_P | MMU_W; // pres
   uint8_t* src = (uint8_t*)SRC_VIRT_PAGE;
   uint8_t* dst = (uint8_t*)DST_VIRT_PAGE;
 
@@ -194,8 +192,8 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
   }
 
   // las desmapeo de estas direcciones virtuales auxiliares
-  // mmu_unmap_page(rcr3(), DST_VIRT_PAGE);
-  // mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
+  mmu_unmap_page(rcr3(), DST_VIRT_PAGE);
+  mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
 }
 
 /**
