@@ -221,7 +221,8 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
   mmu_map_page((uint32_t)tpd, TASK_STACK_BASE - PAGE_SIZE, mmu_next_free_user_page(), MMU_P | MMU_W | MMU_U);  
 
   // Mapear la pagina de memoria compartida como lectura/escritura (despues del stack)
-  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, 0x28000, MMU_P | MMU_W | MMU_U);
+  // 0x1D000 es una direccion de kernel arbitraria (libre) que sera igual para todas las tareas
+  mmu_map_page((uint32_t)tpd, TASK_STACK_BASE, 0x1D000, MMU_P | MMU_W | MMU_U);
 
   return (paddr_t)tpd;
 }

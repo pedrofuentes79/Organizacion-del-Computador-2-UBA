@@ -79,6 +79,8 @@ extern tasks_input_process
     ;   Si caemos acá es porque una tarea causó una excepción
     ;   En lugar de frenar el sistema podríamos matar la tarea (o reiniciarla)
     ;   ¿Cómo harían eso?
+    ; podriamos hacer un disable_current_task en sched.c que, con current_task, ponga en disabled la current task
+    ; y no saltar a kernel_exception, hacer un iret y listo (despues del popad y arreglar la pila...)
     call kernel_exception
     add esp, 10*4
     popad
