@@ -62,31 +62,29 @@ void tss_set(tss_t tss, int8_t task_id) {
  * Crea una tss con los valores por defecto y el eip code_start
  */
 tss_t tss_create_user_task(paddr_t code_start) {
-  //COMPLETAR: es correcta esta llamada a mmu_init_task_dir?
+  
+  // Creamos las estructuras necesarias para esa tarea
   uint32_t cr3 = mmu_init_task_dir(code_start);
 
-  //COMPLETAR: asignar valor inicial de la pila de la tarea
-  // ya esta mapeada en mmu_init_task_dir
+  //Es el valor inicial de la pila de la tarea
   vaddr_t stack = TASK_STACK_BASE; 
 
-  // aclaracion: porque puedo usar siempre la constante TASK_STACK_BASE como direccion virtual de la pila para todas las tareas?
-  // porque la direccion fisica es siempre distinta, va a agarrar una pagina libre distinta para cada tarea
-  // pero, como cada tarea tiene su propia tabla de paginas, es decir, tiene asociada a TASK_STACK_BASE su propia direccion fisica
-  // lo mismo pasa con TASK_CODE_VIRTUAL
+  // Por que podemos usar siempre la constante TASK_STACK_BASE como direccion virtual de la pila para todas las tareas?
+    // Porque la direccion fisica es siempre distinta, va a agarrar una pagina libre distinta para cada tarea pero, como
+    // cada tarea tiene su propia tabla de paginas, es decir, tiene asociada a TASK_STACK_BASE su propia direccion fisica
+    // lo mismo pasa con TASK_CODE_VIRTUAL.
 
-  //COMPLETAR: dir. virtual de comienzo del codigo
-  // ya esta mapeada en mmu_init_task_dir
+  // Dir. virtual de comienzo del codigo
   vaddr_t code_virt = TASK_CODE_VIRTUAL;
-  
-  
-  //COMPLETAR: pedir pagina de kernel para la pila de nivel cero
-  // ni hace falta mapearla (ya que en init task dir se inicializa el tpd con la kpt que tiene id mapping)
-  // cada tarea tiene su propia pila de nivel 0, para poder hacer los cambios de privilegio de nivel 3 a nivel 0
-  // por ejemplo, cuando suceda la interrupcion de reloj, se va a cambiar de nivel 3 a nivel 0 y no se puede usar la pila de nivel 3
+ 
+  // Pedir pagina de kernel para la pila de nivel cero
+    // ni hace falta mapearla (ya que en init task dir se inicializa el tpd con la kpt que tiene id mapping)
+    // cada tarea tiene su propia pila de nivel 0, para poder hacer los cambios de privilegio de nivel 3 a nivel 0
+    // por ejemplo, cuando suceda la interrupcion de reloj, se va a cambiar de nivel 3 a nivel 0 y no se puede usar la pila de nivel 3
   vaddr_t stack0 = (vaddr_t) mmu_next_free_kernel_page();
   
-  // esto es porque la pila crece hacia abajo, apunto al final de la pagina
-  vaddr_t esp0 = stack0 + PAGE_SIZE; // -1 es necesario?
+  // Esto es porque la pila crece hacia abajo, apunto al final de la pagina
+  vaddr_t esp0 = stack0 + PAGE_SIZE; 
   
   return (tss_t) {
     .cr3 = cr3,

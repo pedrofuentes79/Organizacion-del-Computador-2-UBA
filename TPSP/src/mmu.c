@@ -97,7 +97,6 @@ paddr_t mmu_init_kernel_dir(void) {
   while (current_page <= identity_mapping_end){
     kpt[i].page = current_page >> 12; // guardo el page frame
     kpt[i].attrs = MMU_P | MMU_W;     // present y writable
-
     current_page = current_page + PAGE_SIZE;
     i++;
   }
@@ -116,27 +115,37 @@ paddr_t mmu_init_kernel_dir(void) {
  */
 void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
 
+  // Obtenermos el directory y tabla que correspondería de cr3 y virt.
   pd_entry_t* pd = (pd_entry_t*)CR3_TO_PAGE_DIR(cr3);
   uint32_t pd_index = VIRT_PAGE_DIR(virt);
 
-  // si la tabla de paginas no esta presente, la tengo que crear
+  // Si la tabla de paginas no esta presente, la tengo que crear
   if (!(pd[pd_index].attrs & MMU_P)) {
-    // tengo que buscar una pagina libre para la tabla de paginas
+
+    // Buscamos una página libre
     paddr_t new_table = mmu_next_free_kernel_page();
+    
+    // La limpiamos 
     zero_page(new_table);
+
+    // Guardamos la dirección de la nueva tabla en el directory
+    // shifteamos 12 bits porque no va el offset acá
     pd[pd_index].pt = new_table >> 12;
   }
+
+  // Le ponemos a la tabla de páginas los atributos pasados por parámetros para esa página
   pd[pd_index].attrs |= attrs | MMU_P;
   
-  // deberia chequear si la pagina ya esta presente?
+  // Obtenemos tabla y entrada en la misma donde mapear la dir física pasada
   pt_entry_t* pt = (pt_entry_t*)MMU_ENTRY_PADDR(pd[pd_index].pt);  
   uint32_t pt_index = VIRT_PAGE_TABLE(virt);
 
+  // Mapeamos la dirección física pasada
   pt[pt_index].page = phy >> 12;
   pt[pt_index].attrs = attrs | MMU_P;
 
+  // Limpiamos la TLB para que el caché no funcione mal
   tlbflush();
-
 }
 
 /**
@@ -145,24 +154,27 @@ void mmu_map_page(uint32_t cr3, vaddr_t virt, paddr_t phy, uint32_t attrs) {
  * @return la dirección física de la página desvinculada
  */
 paddr_t mmu_unmap_page(uint32_t cr3, vaddr_t virt) {
+
+  // Obtenemos la página en cuestión
   pd_entry_t* pd = (pd_entry_t*)CR3_TO_PAGE_DIR(cr3);
   uint32_t pd_index = VIRT_PAGE_DIR(virt);
   pt_entry_t* pt = (pt_entry_t*)MMU_ENTRY_PADDR(pd[pd_index].pt);
   uint32_t pt_index = VIRT_PAGE_TABLE(virt);
 
-  // chequeo si esta presente
+  // Si no está presente no hacemos nada
   if (!(pt[pt_index].attrs & MMU_P)) {
-    // setearla en 0?
     return 0;
   }
 
+  // Es esta página la que debemos desmapear
   paddr_t page_to_unmap = (pt[pt_index].page << 12) | VIRT_PAGE_OFFSET(virt);
 
-  // seteo la pagina como "no presente"
+  // Seteamos la pagina como "no presente"
   pt[pt_index].attrs = pt[pt_index].attrs & (~MMU_P);
-  // podria ponerla toda en ceros?
 
+  // Limpiamos caché 
   tlbflush();
+
   return page_to_unmap;
 }
 
@@ -178,20 +190,19 @@ paddr_t mmu_unmap_page(uint32_t cr3, vaddr_t virt) {
  * la copia y luego desmapea las páginas. Usar la función rcr3 definida en i386.h para obtener el cr3 actual
  */
 void copy_page(paddr_t dst_addr, paddr_t src_addr) {
-  // necesito mapearlas a alguna direccion virtual! 
-  // si no, no puedo acceder a ellas para hacer la copia
+
+  // Mapeamos las páginas para poder accederlas a las direcciones auxiliares hardcodeadas
   mmu_map_page(rcr3(), DST_VIRT_PAGE, dst_addr, MMU_P | MMU_W);
   mmu_map_page(rcr3(), SRC_VIRT_PAGE, src_addr, MMU_P | MMU_W);
 
+  // Copiamos byte a byte
   uint8_t* src = (uint8_t*)SRC_VIRT_PAGE;
   uint8_t* dst = (uint8_t*)DST_VIRT_PAGE;
-
-  // copio
   for (size_t i = 0; i < PAGE_SIZE; i++) {
     dst[i] = src[i];
   }
 
-  // las desmapeo de estas direcciones virtuales auxiliares
+  // Las desmapeamos de estas direcciones virtuales auxiliares
   mmu_unmap_page(rcr3(), DST_VIRT_PAGE);
   mmu_unmap_page(rcr3(), SRC_VIRT_PAGE);
 }
@@ -202,17 +213,17 @@ void copy_page(paddr_t dst_addr, paddr_t src_addr) {
  * @return el contenido que se ha de cargar en un registro CR3 para la tarea asociada a esta llamada
  */
 paddr_t mmu_init_task_dir(paddr_t phy_start) {
-  // Inicializar estructuras de paginacion
-  // tiene que ser de kernel, por ser una estructura de paginacion
+  // Inicializar estructuras de paginacion, tienen que ser de kernel, por ser una estructura de paginacion
+  
+  // Crear directorio
   pd_entry_t* tpd = (pd_entry_t*)mmu_next_free_kernel_page();
   zero_page((paddr_t)tpd);
 
-  // seteo la primer entrada de tpd como el puntero a kpt (asi tiene id mapping)
+  // Seteo la primer entrada de tpd como el puntero a kpt (asi tiene id mapping)
   tpd[0].pt = ((uint32_t)kpt) >> 12;
   tpd[0].attrs = MMU_P | MMU_W;
 
   // Mapear las dos paginas de codigo como solo lectura (a partir de 0x08000000)
-  // va con MMU_U? va con MMU_W?
   mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL, phy_start, MMU_P | MMU_U);
   mmu_map_page((uint32_t)tpd, TASK_CODE_VIRTUAL + PAGE_SIZE, phy_start + PAGE_SIZE, MMU_P | MMU_U);
 
@@ -228,17 +239,14 @@ paddr_t mmu_init_task_dir(paddr_t phy_start) {
 
 // COMPLETAR: devuelve true si se atendió el page fault y puede continuar la ejecución 
 // y false si no se pudo atender
-bool page_fault_handler(vaddr_t virt) {
+bool page_fault_handler(vaddr_t virt) {  
   print("Atendiendo page fault...", 0, 0, C_FG_WHITE | C_BG_BLACK);
-  // Chequeemos si el acceso fue dentro del area on-demand
-  // En caso de que si, mapear la pagina
 
+  // Chequeemos si el acceso fue dentro del area on-demand
+  // En caso de que si, mapear la pagina y devolver true
   if (virt >= ON_DEMAND_MEM_START_VIRTUAL && virt < ON_DEMAND_MEM_END_VIRTUAL){
     // el acceso es valido
-    // mapeo con r/w, user-level??? o kernel???
-
     paddr_t page_to_write = ON_DEMAND_MEM_START_PHYSICAL;
-
     mmu_map_page(rcr3(), (virt) & ~(0xFFF), page_to_write, MMU_P | MMU_W | MMU_U);
     return true;
   }
@@ -246,5 +254,4 @@ bool page_fault_handler(vaddr_t virt) {
     print("ERROR: ACCESO FUERA DE RANGO", 0, 0, C_FG_WHITE | C_BG_BLACK);
     return false;
   }
-
 }

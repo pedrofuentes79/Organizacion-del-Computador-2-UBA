@@ -38,19 +38,26 @@ static paddr_t task_code_start[2] = {
 /**
  * Crea una tarea en base a su tipo e indice número de tarea en la GDT
  */
-static int8_t create_task(tipo_e tipo) {
+static int8_t create_task(tipo_e tipo) {  
+  // Es el índice en la gdt del descriptor de TSS a crear
   size_t gdt_id;
-  // itera hasta encontrar una entrada libre en la GDT
+  
+  // Itera hasta encontrar una entrada libre en la GDT
   for (gdt_id = GDT_TSS_START; gdt_id < GDT_COUNT; gdt_id++) {
-    if (gdt[gdt_id].p == 0) {
+    if (gdt[gdt_id].p == 0) 
       break;
-    }
   }
   kassert(gdt_id < GDT_COUNT, "No hay entradas disponibles en la GDT");
 
+  // Agrega la tarea a la estructura global de tareas en sched.c 
   int8_t task_id = sched_add_task(gdt_id << 3);
+ 
+  // Crea y agrega en la variable global tss_tasks la tss de la nueva tarea
   tss_tasks[task_id] = tss_create_user_task(task_code_start[tipo]);
+  // Crea y agrega en la GDT un descriptor de TSS para la nueva tarea
   gdt[gdt_id] = tss_gdt_entry_for_task(&tss_tasks[task_id]);
+  
+  // Devuelve el índice en la GDT
   return task_id;
 }
 

@@ -98,13 +98,15 @@ void sched_init(void) {
  * @return uint16_t el selector de segmento de la tarea a saltar
  */
 uint16_t sched_next_task(void) {
+
   // Buscamos la próxima tarea viva (comenzando en la actual)
   int8_t i;
   for (i = (current_task + 1); (i % MAX_TASKS) != current_task; i++) {
+    
     // Si esta tarea está disponible la ejecutamos
-    if (sched_tasks[i % MAX_TASKS].state == TASK_RUNNABLE) {
+    if (sched_tasks[i % MAX_TASKS].state == TASK_RUNNABLE)
       break;
-    }
+  
   }
 
   // Ajustamos i para que esté entre 0 y MAX_TASKS-1

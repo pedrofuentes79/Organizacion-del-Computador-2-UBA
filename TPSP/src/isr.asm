@@ -105,7 +105,7 @@ _isr%1:
   ISRc %1
 %endmacro
 
-; ISR That doesn't push an exception code.
+; ISR That doesnt push an exception code.
 %macro ISRNE 1
 global _isr%1
 
@@ -141,53 +141,64 @@ ISRNE 20
 global _isr14
 _isr14:
     pushad
-    mov eax, cr2
+
+    mov eax, cr2 ; acá está la página que causó el page_fault
+    ; el código de error está en [esp + 32] (puedo tenerlo con mov edi, [esp + 32])
+    
     push eax
     call page_fault_handler
-    add esp, 4 ; saca lo que le habiamos pasado por pila
+    add esp, 4
+    
+    ; si page_fault_handler retornó 0 --> error
+    ; sino --> fin
     cmp eax, 0
     je .ring0_exception
     jmp .fin
 
     .ring0_exception:
-    call kernel_exception
-    jmp $
+      call kernel_exception
+      jmp $
 
     .fin:
-        popad
-        add esp, 4 ; saca el error code de la pila
-        iret
-
-
+      popad
+      add esp, 4 ; saca el error code de la pila
+      iret
 
 ;; Rutina de atención del RELOJ
 ;; -------------------------------------------------------------------------- ;;
 global _isr32
 ; COMPLETAR: Implementar la rutina
 _isr32:
+    
     pushad
+    
     ; 1. Le decimos al PIC que vamos a atender la interrupción
     call pic_finish1
     call next_clock
+    
     ; 2. Realizamos el cambio de tareas en caso de ser necesario
     call sched_next_task
     cmp ax, 0
     je .fin
 
+    ; Si no hay cambio de tarea --> fin
     str bx
     cmp ax, bx
     je .fin
 
+    ; Si hay cambio de tarea --> saltamos a la nueva tarea
     mov word [sched_task_selector], ax
     jmp far [sched_task_offset]
 
     .fin:
-    ; 3. Actualizamos las estructuras compartidas ante el tick del reloj
-    call tasks_tick
-    ; 4. Actualizamos la "interfaz" del sistema en pantalla
-    call tasks_screen_update
-    popad
-    iret
+      ; 3. Actualizamos las estructuras compartidas ante el tick del reloj
+      call tasks_tick
+      
+      ; 4. Actualizamos la "interfaz" del sistema en pantalla
+      call tasks_screen_update
+      
+      popad
+      iret
 
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
