@@ -2,7 +2,5 @@
 Repositorio de trabajos prácticos grupales - Arquitectura y Organización del Computador, segundo cuatrimestre 2024.
 
 ----
-Recuerden configurar el repositorio:
-- Configurar la visibilidad del repositorio a `private` en `settings > general > Visibility, project features, permissions`
-- Habilitar el issue tracker en la misma sección de `settings > general` en si no lo está ya
-- Agregar a todos los docentes con rol developer
+Este repositorio tiene los trabajos practicos realizados en la materia Arquitectura y Organización del Computador.
+Entre estos trabajos se encuentran algunos ejercicios en ASM trabajando bajo el paradigma de SIMD, ademas de un trabajo de System Programming en el cual creamos un kernel desde cero, que tiene soporte para multitareas.
